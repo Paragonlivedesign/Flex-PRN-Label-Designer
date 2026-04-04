@@ -7,14 +7,14 @@
   - Allowing the image request in your browser, or
   - Run:  npx --yes serve "g:\My Drive\Flex Docs\Flex Barcode Lables"  then open http://localhost:3000/label-designer.html
 
-  FLEX: Click "Copy ZPL" and paste into Flex's label template field. If Flex requires
-  the binary header line, leave "Include Flex header" checked (matches your .prn samples).
+  FLEX: Click "Copy ZPL" and paste into Flex's label template field.   If Flex requires
+  the binary header line, leave Flex header checked under Settings → Layout (matches your .prn samples).
 
   IMPORT: Import… loads a .prn/.txt for view/edit and preview (canvas stays for reference;
   use "Back to designer" to regenerate ZPL from objects). Save .prn downloads current ZPL.
   Save project / Open project stores the full layout (and optional imported ZPL) as JSON.
 
-  SETTINGS (bottom-right): Appearance (light/dark theme) and Designer help. CONNECTIONS: Printer, Flex API, Scan & load, About.
+  SETTINGS (bottom-right): Appearance, Layout (Flex header, tool defaults), Help, Printer, Flex API, Scan & load, About.
 -->
 <html lang="en">
 <head>
@@ -566,9 +566,9 @@
           <label>MB <input type="number" class="hdr-inp-xs" id="mB" step="0.01" min="0" title="Margin bottom" /></label>
         </fieldset>
         <label class="chk"><input type="checkbox" id="linkMargin" /> Same</label>
-        <label class="chk" title="Place and draw objects in the red margin bands (e.g. wrap-around cable labels). Printer may still clip."><input type="checkbox" id="allowOutsidePrintable" /> In margins</label>
-        <label class="chk"><input type="checkbox" id="flexHeader" checked /> Flex header</label>
-        <button type="button" class="btn secondary" id="btnResetLabelDefaults" style="padding:0.2rem 0.45rem;font-size:11px" title="2×1 in, 203 DPI, 0.05&quot; margins, turn off in-margins and calibration overlay; keeps objects">Reset defaults</button>
+        <label class="chk" title="When checked, placement stays in the green printable area. Uncheck to also use the red margin bands on the label (e.g. wrap-around)."><input type="checkbox" id="printableAreaOnly" checked /> Printable area only</label>
+        <label class="chk" title="Allow click/drag in the gray pad around the label. Content there is for layout reference; the printer only uses the white label rectangle."><input type="checkbox" id="allowOutsideLabel" /> Canvas workspace</label>
+        <button type="button" class="btn secondary" id="btnResetLabelDefaults" style="padding:0.2rem 0.45rem;font-size:11px" title="2×1 in, 203 DPI, 0.05&quot; margins, printable area only, canvas workspace off, calibration overlay off; keeps objects">Reset defaults</button>
         <div style="flex:1;min-width:0.5rem"></div>
         <span id="dotsReadout" style="color:var(--muted);font-size:11px;white-space:nowrap"></span>
       </div>
@@ -639,7 +639,7 @@
         <span class="status" id="previewStatus"></span>
         <p class="preview-net-note">
           <strong>Internet required</strong> for this preview: ZPL is sent to
-          <a href="https://labelary.com/" target="_blank" rel="noopener noreferrer">Labelary</a>
+          <a href="https://labelary.com/viewer.html" target="_blank" rel="noopener noreferrer">Labelary</a>
           (<code>api.labelary.com</code>). Updates are debounced and spaced (~3/sec free-tier friendly). Not used for printing or Flex.
         </p>
       </div>
@@ -700,6 +700,11 @@
           <p class="hint print-panel-hint" style="margin-top:0">
             <strong>Defaults for new</strong> Text/Barcode tools (per-object content is still in the Properties panel). Snap and grid live under the canvas.
           </p>
+          <label
+            class="chk"
+            style="margin:0 0 0.75rem;display:block"
+            title="Prepends the Flex-style header (STX + CT~~CD…) before ^XA in generated ZPL. Turn off if your workflow expects raw ^XA…^XZ only."
+            ><input type="checkbox" id="flexHeader" checked /> Flex header</label>
           <div class="flex-lib flex-lib--modal">
             <div class="flex-lib-title">Flex merge defaults (new elements)</div>
             <div class="fl-row">
@@ -726,11 +731,11 @@
         </div>
         <div id="connPanelHelp" class="conn-panel" role="tabpanel" tabindex="-1">
           <div class="settings-help-body">
-            <p><strong>Label</strong> size is the physical media; <strong>margins</strong> define the printable area inside it (green dashed). <strong>Red tint</strong> is still on the label — turn on <strong>In margins</strong> to place there. Extra gray around the label on the canvas is workspace only. Only the label rectangle maps to ZPL.</p>
-            <p><strong>Red tint</strong> = margin (won’t print as content unless you use tokens that print there). <strong>Reset label defaults</strong> in the header restores 2×1 in, 203 DPI, 0.05&quot; margins, and turns off in-margins and the yellow calibration overlay; your objects stay. Turn on <strong>In margins</strong> in the header to place content in the margin bands (wrap labels).</p>
+            <p><strong>Label</strong> size is the physical media; <strong>margins</strong> define the printable area inside it (green dashed). <strong>Red tint</strong> is still on the label — uncheck <strong>Printable area only</strong> to place there. Turn on <strong>Canvas workspace</strong> to click and drag in the gray pad around the label (layout reference only; ZPL still maps the white label).</p>
+            <p><strong>Red tint</strong> = margin (won’t print as content unless you use tokens that print there). <strong>Reset label defaults</strong> in the header restores 2×1 in, 203 DPI, 0.05&quot; margins, printable-area-only on, canvas workspace off, and hides the yellow calibration overlay; your objects stay. Uncheck <strong>Printable area only</strong> to use margin bands (wrap labels).</p>
             <p><strong>Print calibration</strong> — use the <strong>Calibrate</strong> button (bottom-right): print a test label, drag the yellow box to match real ink limits, then <strong>Apply to margins</strong>. Pick a tool and <strong>click</strong> to place; drag to move. With an object selected, drag the <strong>blue corner squares</strong> (bottom-right = grow; top-left on shapes = shrink/move corner).</p>
             <p>Text: SE only — on-canvas size tracks ZPL <code>^AfN</code> (font <code>f</code> = 0, A–H, P–V) height/width (dots). Barcode: SE only (2D = magnification; QR pattern uses Labelary-compatible encoding when online).</p>
-            <p>Snap, show grid, and grid spacing are <strong>under the canvas</strong>. <strong>Settings → Layout</strong> has default merge tokens for new Text/Barcode tools.</p>
+            <p>Snap, show grid, and grid spacing are <strong>under the canvas</strong>. <strong>Settings → Layout</strong> has the Flex header toggle and default merge tokens for new Text/Barcode tools.</p>
           </div>
         </div>
         <div id="connPanelPrinter" class="conn-panel active" role="tabpanel">
@@ -1132,6 +1137,7 @@
     relayUrl: '',
     printerConfigName: '',
     allowOutsidePrintable: false,
+    allowOutsideLabel: false,
     printCalibration: { visible: false, lx: 0, ly: 0, lw: 100, lh: 100 },
     flexApiBase: '',
     flexApiPath: DEFAULT_FLEX_API_PATH,
@@ -1224,18 +1230,34 @@
     };
   }
 
+  /** Canvas gray pad around the label, in inner-coordinate dots (call after syncCanvasSize). */
+  function workspacePadDots() {
+    return LABEL_VIEW_PAD_PX / state.pxPerDot;
+  }
+
   function clampInner(ix, iy) {
+    syncCanvasSize();
     var inner = innerDots();
     var M = marginDots();
+    var pad = state.allowOutsideLabel ? workspacePadDots() : 0;
+    var minX;
+    var maxX;
+    var minY;
+    var maxY;
     if (!state.allowOutsidePrintable) {
-      return {
-        x: Math.max(0, Math.min(inner.w - 1, Math.round(ix))),
-        y: Math.max(0, Math.min(inner.h - 1, Math.round(iy)))
-      };
+      minX = -pad;
+      maxX = inner.w - 1 + pad;
+      minY = -pad;
+      maxY = inner.h - 1 + pad;
+    } else {
+      minX = -M.l - pad;
+      maxX = inner.w + M.r - 1 + pad;
+      minY = -M.t - pad;
+      maxY = inner.h + M.b - 1 + pad;
     }
     return {
-      x: Math.max(-M.l, Math.min(inner.w + M.r - 1, Math.round(ix))),
-      y: Math.max(-M.t, Math.min(inner.h + M.b - 1, Math.round(iy)))
+      x: Math.max(minX, Math.min(maxX, Math.round(ix))),
+      y: Math.max(minY, Math.min(maxY, Math.round(iy)))
     };
   }
 
@@ -1255,7 +1277,7 @@
         'Reset label to factory defaults?\n\n' +
           '• Size 2×1 in, 203 DPI\n' +
           '• Margins 0.05" on all sides\n' +
-          '• In margins: off; yellow calibration box: hidden\n' +
+          '• Printable area only: on; canvas workspace: off; yellow calibration box: hidden\n' +
           '• Flex header: on\n\n' +
           'Objects on the label are kept and moved inward if they no longer fit.'
       )
@@ -1271,6 +1293,7 @@
     state.marginB = DEFAULT_MARGIN_IN;
     state.linkMargin = false;
     state.allowOutsidePrintable = false;
+    state.allowOutsideLabel = false;
     state.printCalibration.visible = false;
     state.flexHeader = true;
     syncPrintCalibrationFromMargins();
@@ -1529,6 +1552,7 @@
 
   /** Matches ZPL ^AfN fontH × fontW (dots) on canvas: height = fontH·px, width scaled to ~n·fontW·px. */
   function textBoxCanvas(o) {
+    syncCanvasSize();
     clampTextObjectFonts(o);
     var px = state.pxPerDot;
     var inner = innerDots();
@@ -1541,9 +1565,9 @@
     var hPx = fh * px;
     var targetWPx = Math.max(fw * px, text.length * fw * px * 0.58);
     var Lb = labelDots();
-    var Mb = marginDots();
-    var maxWdots = state.allowOutsidePrintable ? Lb.w : inner.w;
-    var maxHdots = state.allowOutsidePrintable ? Lb.h : inner.h;
+    var pd = state.allowOutsideLabel ? workspacePadDots() : 0;
+    var maxWdots = (state.allowOutsidePrintable ? Lb.w : inner.w) + 2 * pd;
+    var maxHdots = (state.allowOutsidePrintable ? Lb.h : inner.h) + 2 * pd;
     var maxBoxWp = Math.max(24, maxWdots * px - 4);
     var maxBoxHp = Math.max(16, maxHdots * px - 4);
     var boxW = Math.min(targetWPx + padX * 2, maxBoxWp);
@@ -2052,32 +2076,47 @@
   }
 
   function clampObjectIntoInner(o) {
+    syncCanvasSize();
+    var pd = state.allowOutsideLabel ? workspacePadDots() : 0;
     var b = objectBounds(o);
     if (!state.allowOutsidePrintable) {
       var inner = innerDots();
-      if (b.x + b.w > inner.w) o.x = Math.max(0, inner.w - b.w);
-      if (b.y + b.h > inner.h) o.y = Math.max(0, inner.h - b.h);
-      if (o.x < 0) o.x = 0;
-      if (o.y < 0) o.y = 0;
+      var minX = -pd;
+      var minY = -pd;
+      var maxR = inner.w + pd;
+      var maxB = inner.h + pd;
+      for (var iter = 0; iter < 8; iter++) {
+        b = objectBounds(o);
+        if (b.x < minX) o.x += minX - b.x;
+        else if (b.x + b.w > maxR) o.x -= b.x + b.w - maxR;
+        if (b.y < minY) o.y += minY - b.y;
+        else if (b.y + b.h > maxB) o.y -= b.y + b.h - maxB;
+        else break;
+      }
       return;
     }
     var M = marginDots();
     var L = labelDots();
-    for (var iter = 0; iter < 6; iter++) {
+    var minLX = -pd;
+    var minLY = -pd;
+    var maxR = L.w + pd;
+    var maxB = L.h + pd;
+    for (var iter2 = 0; iter2 < 8; iter2++) {
       b = objectBounds(o);
       var left = M.l + b.x;
       var top = M.t + b.y;
       var right = left + b.w;
       var bot = top + b.h;
-      if (right <= L.w && bot <= L.h && left >= 0 && top >= 0) return;
-      if (left < 0) o.x -= left;
-      else if (right > L.w) o.x -= right - L.w;
-      if (top < 0) o.y -= top;
-      else if (bot > L.h) o.y -= bot - L.h;
+      if (left >= minLX && top >= minLY && right <= maxR && bot <= maxB) return;
+      if (left < minLX) o.x -= left - minLX;
+      else if (right > maxR) o.x -= right - maxR;
+      if (top < minLY) o.y -= top - minLY;
+      else if (bot > maxB) o.y -= bot - maxB;
     }
   }
 
   function snapTopLeftForObject(o, nx, ny) {
+    syncCanvasSize();
     if (!state.snapToObjects && !state.snapGridEnabled) {
       return { x: Math.round(nx), y: Math.round(ny) };
     }
@@ -2089,9 +2128,10 @@
     var h = b.h;
     var tol = SNAP_TOL_DOTS;
 
+    var pd = state.allowOutsideLabel ? workspacePadDots() : 0;
     var rects = state.allowOutsidePrintable
-      ? [{ x: -M.l, y: -M.t, w: L.w, h: L.h }]
-      : [{ x: 0, y: 0, w: inner.w, h: inner.h }];
+      ? [{ x: -M.l - pd, y: -M.t - pd, w: L.w + 2 * pd, h: L.h + 2 * pd }]
+      : [{ x: -pd, y: -pd, w: inner.w + 2 * pd, h: inner.h + 2 * pd }];
     state.objects.forEach(function (o2) {
       if (!o2 || o2.id === o.id) return;
       var br = objectBounds(o2);
@@ -2268,11 +2308,13 @@
   }
 
   function clampResizeForObject(o) {
+    syncCanvasSize();
     var inner = innerDots();
     var Lr = labelDots();
     var Mr = marginDots();
-    var maxX = state.allowOutsidePrintable ? Lr.w - Mr.l : inner.w;
-    var maxY = state.allowOutsidePrintable ? Lr.h - Mr.t : inner.h;
+    var pd = state.allowOutsideLabel ? workspacePadDots() : 0;
+    var maxX = (state.allowOutsidePrintable ? Lr.w - Mr.l : inner.w) + pd;
+    var maxY = (state.allowOutsidePrintable ? Lr.h - Mr.t : inner.h) + pd;
     if (o.type === 'barcode') {
       o.mag = Math.max(1, Math.min(10, parseInt(o.mag, 10) || 4));
       o.moduleW = Math.max(1, Math.min(6, parseInt(o.moduleW, 10) || 2));
@@ -2550,7 +2592,9 @@
     var clipPrintH = Math.max(1, inner.h * px);
     ctx.save();
     ctx.beginPath();
-    if (state.allowOutsidePrintable) {
+    if (state.allowOutsideLabel) {
+      ctx.rect(RULER, RULER, Math.max(1, canvas.width - RULER), Math.max(1, canvas.height - RULER));
+    } else if (state.allowOutsidePrintable) {
       ctx.rect(lxClip, lyClip, L.w * px, L.h * px);
     } else {
       ctx.rect(clipPrintX, clipPrintY, clipPrintW, clipPrintH);
@@ -2722,6 +2766,9 @@
       var extraOut = state.allowOutsidePrintable
         ? ' · objects may extend into margin tint (ZPL uses full label).'
         : '';
+      if (state.allowOutsideLabel) {
+        extraOut += ' · canvas workspace on (gray pad is interactive).';
+      }
       drEl.textContent =
         'Label ' +
         L.w +
@@ -3171,6 +3218,7 @@
       flexLastResponseText: state.flexLastResponseText,
       settingsActiveTab: state.settingsActiveTab || 'printer',
       allowOutsidePrintable: !!state.allowOutsidePrintable,
+      allowOutsideLabel: !!state.allowOutsideLabel,
       printCalibration: {
         visible: !!state.printCalibration.visible,
         lx: state.printCalibration.lx | 0,
@@ -3272,6 +3320,7 @@
         ? tabPick
         : 'printer';
     state.allowOutsidePrintable = !!s.allowOutsidePrintable;
+    state.allowOutsideLabel = !!s.allowOutsideLabel;
     var pcIn = s.printCalibration;
     if (
       pcIn &&
@@ -3328,9 +3377,12 @@
     document.getElementById('mR').value = state.marginR;
     document.getElementById('mB').value = state.marginB;
     document.getElementById('linkMargin').checked = state.linkMargin;
-    document.getElementById('flexHeader').checked = state.flexHeader;
-    var aop = document.getElementById('allowOutsidePrintable');
-    if (aop) aop.checked = !!state.allowOutsidePrintable;
+    var fhUi = document.getElementById('flexHeader');
+    if (fhUi) fhUi.checked = state.flexHeader;
+    var paoUi = document.getElementById('printableAreaOnly');
+    if (paoUi) paoUi.checked = !state.allowOutsidePrintable;
+    var aolUi = document.getElementById('allowOutsideLabel');
+    if (aolUi) aolUi.checked = !!state.allowOutsideLabel;
     var cshow = document.getElementById('calShowOverlay');
     if (cshow) cshow.checked = !!state.printCalibration.visible;
     var so = document.getElementById('snapObjects');
@@ -4766,9 +4818,12 @@
       state.marginR = parseFloat(document.getElementById('mR').value) || 0;
       state.marginB = parseFloat(document.getElementById('mB').value) || 0;
       state.linkMargin = document.getElementById('linkMargin').checked;
-      state.flexHeader = document.getElementById('flexHeader').checked;
-      var aopEl = document.getElementById('allowOutsidePrintable');
-      if (aopEl) state.allowOutsidePrintable = !!aopEl.checked;
+      var fhR = document.getElementById('flexHeader');
+      if (fhR) state.flexHeader = !!fhR.checked;
+      var paoEl = document.getElementById('printableAreaOnly');
+      if (paoEl) state.allowOutsidePrintable = !paoEl.checked;
+      var aolEl = document.getElementById('allowOutsideLabel');
+      if (aolEl) state.allowOutsideLabel = !!aolEl.checked;
     }
 
     function writeDims() {
@@ -4780,9 +4835,12 @@
       document.getElementById('mR').value = state.marginR;
       document.getElementById('mB').value = state.marginB;
       document.getElementById('linkMargin').checked = state.linkMargin;
-      document.getElementById('flexHeader').checked = state.flexHeader;
-      var aopW = document.getElementById('allowOutsidePrintable');
-      if (aopW) aopW.checked = !!state.allowOutsidePrintable;
+      var fhUi = document.getElementById('flexHeader');
+      if (fhUi) fhUi.checked = state.flexHeader;
+      var paoW = document.getElementById('printableAreaOnly');
+      if (paoW) paoW.checked = !state.allowOutsidePrintable;
+      var aolW = document.getElementById('allowOutsideLabel');
+      if (aolW) aolW.checked = !!state.allowOutsideLabel;
     }
 
     preset.addEventListener('change', function () {
@@ -4823,15 +4881,32 @@
       refreshZpl();
       draw();
     });
-    document.getElementById('flexHeader').addEventListener('change', function () {
-      readDims();
-      refreshZpl();
-    });
-    var allowOutEl = document.getElementById('allowOutsidePrintable');
-    if (allowOutEl) {
-      allowOutEl.addEventListener('change', function () {
+    var flexHeaderEl = document.getElementById('flexHeader');
+    if (flexHeaderEl) {
+      flexHeaderEl.addEventListener('change', function () {
+        readDims();
+        refreshZpl();
+        tryPersist();
+      });
+    }
+    var printableOnlyEl = document.getElementById('printableAreaOnly');
+    if (printableOnlyEl) {
+      printableOnlyEl.addEventListener('change', function () {
         readDims();
         if (!state.allowOutsidePrintable) {
+          state.objects.forEach(function (ob) {
+            clampObjectIntoInner(ob);
+          });
+        }
+        draw();
+        tryPersist();
+      });
+    }
+    var allowOutsideLabelEl = document.getElementById('allowOutsideLabel');
+    if (allowOutsideLabelEl) {
+      allowOutsideLabelEl.addEventListener('change', function () {
+        readDims();
+        if (!state.allowOutsideLabel) {
           state.objects.forEach(function (ob) {
             clampObjectIntoInner(ob);
           });
@@ -5507,11 +5582,20 @@
       );
     }
 
+    function pointerInCanvasWorkspace(mx, my) {
+      if (mx < RULER || my < RULER) return false;
+      syncCanvasSize();
+      if (state.allowOutsideLabel) {
+        return mx < canvas.width && my < canvas.height;
+      }
+      return pointerInLabel(mx, my);
+    }
+
     canvas.addEventListener('mousedown', function (e) {
       var c = canvasCoords(e);
       var mx = c.mx;
       var my = c.my;
-      if (!pointerInLabel(mx, my)) return;
+      if (!pointerInCanvasWorkspace(mx, my)) return;
       var calHit = state.printCalibration.visible ? hitTestPrintCalibration(mx, my) : null;
       if (calHit) {
         e.preventDefault();
@@ -5587,7 +5671,7 @@
         }
         return;
       }
-      if (pointerInLabel(c.mx, c.my)) {
+      if (pointerInCanvasWorkspace(c.mx, c.my)) {
         var ch = state.printCalibration.visible ? hitTestPrintCalibration(c.mx, c.my) : null;
         if (ch === 'move') canvas.style.cursor = 'move';
         else if (ch === 'n' || ch === 's') canvas.style.cursor = 'ns-resize';
