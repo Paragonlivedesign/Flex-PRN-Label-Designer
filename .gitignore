@@ -1,0 +1,4 @@
+# Only the designer HTML is in this repo — keep local labels, configs, and docs out.
+/*
+!.gitignore
+!label-designer.html
