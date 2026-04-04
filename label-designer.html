@@ -760,6 +760,12 @@
             <label><input type="radio" name="uiTheme" id="themeDark" value="dark" checked /> Dark</label>
             <label><input type="radio" name="uiTheme" id="themeLight" value="light" /> Light</label>
           </div>
+          <p class="hint print-panel-hint" style="margin:0.85rem 0 0.35rem">Label on canvas (visual only — not exported in ZPL).</p>
+          <label class="chk" style="margin:0 0 0.45rem;display:block" title="Rounds the white label shell and margin tint on the designer canvas"
+            ><input type="checkbox" id="labelRoundedCorners" /> Rounded label corners</label>
+          <label class="fl" style="margin:0">Corner radius (px)
+            <input type="number" id="labelCornerRadiusPx" class="fl-input" min="0" max="48" step="1" value="10" style="max-width:5.5rem" title="0–48; applied when rounded corners is checked" />
+          </label>
         </div>
         <div id="connPanelLayout" class="conn-panel" role="tabpanel">
           <p class="hint print-panel-hint" style="margin-top:0">
@@ -796,8 +802,9 @@
         </div>
         <div id="connPanelHelp" class="conn-panel" role="tabpanel" tabindex="-1">
           <div class="settings-help-body">
-            <p><strong>Label</strong> size is the physical media; <strong>margins</strong> define the printable area inside it (green dashed). <strong>Red tint</strong> is still on the label — uncheck <strong>Printable area only</strong> to place there. Turn on <strong>Canvas workspace</strong> to click and drag in the gray pad around the label (layout reference only; ZPL still maps the white label).</p>
-            <p><strong>Red tint</strong> = margin (won’t print as content unless you use tokens that print there). <strong>Reset label defaults</strong> in the header restores 2×1 in, 203 DPI, 0.05&quot; margins, printable-area-only on, canvas workspace off, and hides the yellow calibration overlay; your objects stay. Uncheck <strong>Printable area only</strong> to use margin bands (wrap labels).</p>
+            <p><strong>Label</strong> size is the physical media; <strong>margins</strong> define the printable area inside it (green dashed). <strong>Red tint</strong> is still on the label — uncheck <strong>Printable area only</strong> to place there. With <strong>Printable area only</strong> on, elements stay inside the green area even if <strong>Canvas workspace</strong> is on (the gray pad is only for easier clicking around the label). ZPL still maps the white label rectangle.</p>
+            <p><strong>Red tint</strong> = margin (won’t print as content unless you use tokens that print there). <strong>Reset label defaults</strong> in the header restores 2×1 in, 203 DPI, 0.05&quot; margins on all sides (header fields update), printable-area-only on, canvas workspace off, and hides the yellow calibration overlay; your objects stay. Uncheck <strong>Printable area only</strong> to use margin bands (wrap labels). Tightening printable area or turning off canvas workspace may ask to fit or clip content.</p>
+            <p><strong>Appearance</strong> — optional <strong>rounded label corners</strong> on the canvas (cosmetic; does not change ZPL).</p>
             <p><strong>Print calibration</strong> — <strong>Calibrate</strong> (bottom-right): draw a <strong>Box</strong> for the real print area, print, adjust that box on the canvas to match the physical label, then show the yellow box and either drag it to match or use <strong>Match selected box</strong>, then <strong>Apply to margins</strong>. Pick a tool and <strong>click</strong> to place; drag to move. With an object selected, drag the <strong>blue corner squares</strong> (bottom-right = grow; top-left on shapes = shrink/move corner).</p>
             <p>Text: SE only — on-canvas size tracks ZPL <code>^AfN</code> (font <code>f</code> = 0, A–H, P–V) height/width (dots). Barcode: SE only (2D = magnification; QR pattern uses Labelary-compatible encoding when online).</p>
             <p><strong>Rotate / flip</strong> — in Properties, use ↺/↻ for 90° steps and Flip H/V. Exported ZPL sets orientation <strong>N/R/I/B</strong> (0°/90°/180°/270° CW) on <code>^A</code> (text) and <code>^BQ</code>/<code>^BC</code>/… (barcodes) so Labelary and printers apply rotation. <code>^FW</code> wraps lines/boxes/images that have no per-field angle. Flip is preview-only for text and barcodes.</p>
@@ -998,7 +1005,7 @@
     refreshFlexTestDataUi();
     tryPersist();
     state.objects.forEach(function (ob) {
-      if (ob.type === 'barcode') invalidateBarcodeQrCache(ob);
+      if (ob.type === 'barcode') invalidateBarcodeQrCacheAndRemerge(ob);
     });
     pushZplFromModelSoon();
     draw();
@@ -1192,6 +1199,37 @@
     o._qrDrawKey = '';
     o._qrPendingKey = '';
     o._qrRasterGen = (o._qrRasterGen | 0) + 1;
+    o._qrMergedGen = (o._qrMergedGen | 0) + 1;
+    o.qrMergedGfaHex = null;
+    o.qrMergedGfaRowBytes = null;
+    o.qrMergedGfaTotal = 0;
+    o.qrMergedGfaW = 0;
+    o.qrMergedGfaH = 0;
+    o._qrMergedKey = '';
+  }
+
+  /**
+   * After qrcode.toCanvas, clear the logo area to white so the designer preview matches print:
+   * logo raster uses threshold→alpha (transparent “paper”), which would otherwise show black modules through.
+   */
+  /** White out center region; coreW/H = QR size in dots, logoSideDots = snapped logo square (dots). */
+  function punchCenterWhiteInQrCanvas(cvs, coreWdots, coreHdots, logoSideDots) {
+    if (!cvs || cvs.width < 2 || cvs.height < 2 || !(logoSideDots > 0)) return;
+    var sw = Math.max(1, coreWdots);
+    var sh = Math.max(1, coreHdots);
+    var sx = cvs.width / sw;
+    var sy = cvs.height / sh;
+    var cw = Math.max(2, logoSideDots * sx);
+    var ch = Math.max(2, logoSideDots * sy);
+    var cx = (cvs.width - cw) / 2;
+    var cy = (cvs.height - ch) / 2;
+    var x0 = Math.max(0, Math.floor(cx));
+    var y0 = Math.max(0, Math.floor(cy));
+    var x1 = Math.min(cvs.width, Math.ceil(cx + cw));
+    var y1 = Math.min(cvs.height, Math.ceil(cy + ch));
+    var ctx2 = cvs.getContext('2d');
+    ctx2.fillStyle = '#ffffff';
+    ctx2.fillRect(x0, y0, Math.max(1, x1 - x0), Math.max(1, y1 - y0));
   }
 
   function barcodeHrFontH(o) {
@@ -1200,6 +1238,105 @@
 
   function barcodeHrFontW(o) {
     return Math.max(6, Math.min(120, parseInt(o.hrFontW, 10) || 11));
+  }
+
+  /** QR center logo: Properties slider (% of QR side). Size snaps to whole modules (mag dots); max % scales with symbol (EC H). */
+  var QR_LOGO_PCT_MIN = 8;
+  /** Absolute UI ceiling; real max is qrLogoMaxPctForObject (scannable). */
+  var QR_LOGO_PCT_ABS_MAX = 95;
+  /** 2D barcode magnification cap (^BQ / ^BX) for QR and Data Matrix layout and ZPL. */
+  var BARCODE_2D_MAG_MAX = 12;
+
+  function qrMagnificationDots(o) {
+    return Math.max(1, Math.min(BARCODE_2D_MAG_MAX, parseInt(o.mag, 10) || 4));
+  }
+
+  function qrModulesPerSide(o) {
+    return estimateQrModulesConservative(qrEffectiveData(o));
+  }
+
+  /**
+   * Max centered logo square (dots) for model-2 QR at high EC (~H).
+   * Slightly larger cap than older 30%×modules — many payloads still scan; slider can go lower if needed.
+   */
+  function qrMaxLogoSideDots(o) {
+    if (String(o.sym || '').toLowerCase() !== 'qr') return 4000;
+    var core = computeBarcodeCoreDots(o);
+    var mag = qrMagnificationDots(o);
+    var m = qrModulesPerSide(o);
+    var qrSide = Math.min(core.w, core.h);
+    var maxModules = Math.max(4, Math.min(Math.floor(m * 0.38), m - 10));
+    return Math.min(qrSide, Math.max(mag, maxModules * mag));
+  }
+
+  function qrMinLogoSideDots(o) {
+    var mag = qrMagnificationDots(o);
+    var core = computeBarcodeCoreDots(o);
+    var qrSide = Math.min(core.w, core.h);
+    var minDots = Math.max(8, mag * Math.max(1, Math.ceil(8 / mag)));
+    return Math.min(qrSide, minDots);
+  }
+
+  function snapQrLogoSideDots(o, desiredDots) {
+    var mag = qrMagnificationDots(o);
+    var core = computeBarcodeCoreDots(o);
+    var qrSide = Math.min(core.w, core.h);
+    var minS = qrMinLogoSideDots(o);
+    var maxS = qrMaxLogoSideDots(o);
+    if (maxS < minS) return Math.max(8, Math.min(qrSide, maxS));
+    var d = Math.max(minS, Math.min(maxS, Math.round(desiredDots)));
+    var k = Math.round(d / mag);
+    var side = k * mag;
+    if (side < minS) side = Math.ceil(minS / mag) * mag;
+    if (side > maxS) side = Math.floor(maxS / mag) * mag;
+    if (side < minS) side = minS;
+    if (side > maxS) side = maxS;
+    return Math.max(8, Math.min(qrSide, side));
+  }
+
+  function qrLogoPctFromSideDots(o, sideDots) {
+    var core = computeBarcodeCoreDots(o);
+    var qr = Math.min(core.w, core.h);
+    if (qr < 1) return QR_LOGO_PCT_MIN;
+    return Math.round((sideDots / qr) * 1000) / 10;
+  }
+
+  function qrLogoMaxPctForObject(o) {
+    if (String(o.sym || '').toLowerCase() !== 'qr') return QR_LOGO_PCT_ABS_MAX;
+    var maxS = qrMaxLogoSideDots(o);
+    var p = qrLogoPctFromSideDots(o, maxS);
+    return Math.min(QR_LOGO_PCT_ABS_MAX, Math.max(QR_LOGO_PCT_MIN, p));
+  }
+
+  function clampQrLogoPct(o) {
+    if (String(o.sym || '').toLowerCase() !== 'qr') return;
+    var mx = qrLogoMaxPctForObject(o);
+    var v = o.logoPct != null ? o.logoPct : 20;
+    o.logoPct = Math.max(QR_LOGO_PCT_MIN, Math.min(mx, v));
+  }
+
+  /**
+   * Snap logo ^FO offset to whole modules (mag dots) for ZPL, staying as close as possible to true center.
+   * (Designer canvas and merged ^GFA use geometric center instead so the image lines up with the white punch.)
+   */
+  function qrLogoAlignedOffset(outerDots, logoSideDots, mag) {
+    mag = Math.max(1, mag);
+    var spare = Math.max(0, outerDots - logoSideDots);
+    var ideal = spare / 2;
+    var offLow = Math.floor(ideal / mag) * mag;
+    var offHigh = Math.ceil(ideal / mag) * mag;
+    var off = Math.abs(offLow - ideal) <= Math.abs(offHigh - ideal) ? offLow : offHigh;
+    if (off + logoSideDots > outerDots) off = Math.max(0, outerDots - logoSideDots);
+    if (off < 0) off = 0;
+    return off;
+  }
+
+  /** Pixel top-left for logo on scaled QR (matches punchCenterWhiteInQrCanvas centering). */
+  function qrLogoCanvasTopLeftPx(p, bw, bh, sidePx) {
+    return {
+      lx: Math.round(p.x + (bw - sidePx) / 2),
+      ly: Math.round(p.y + (bh - sidePx) / 2)
+    };
   }
 
   var state = {
@@ -1236,6 +1373,8 @@
     printerConfigName: '',
     allowOutsidePrintable: false,
     allowOutsideLabel: false,
+    /** 0 = square label on canvas; >0 = corner radius in CSS pixels (visual only). */
+    labelViewCornerRadiusPx: 0,
     printCalibration: { visible: false, lx: 0, ly: 0, lw: 100, lh: 100 },
     flexApiBase: '',
     flexApiPath: DEFAULT_FLEX_API_PATH,
@@ -1407,20 +1546,134 @@
     return LABEL_VIEW_PAD_PX / state.pxPerDot;
   }
 
+  /** Extra slack for placement only when content may use margin bands or gray pad. Printable-area-only ignores pad so objects stay inside green. */
+  function workspacePadForClamping() {
+    if (!state.allowOutsidePrintable) return 0;
+    return state.allowOutsideLabel ? workspacePadDots() : 0;
+  }
+
+  function setDomInputNumber(id, v) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var n = typeof v === 'number' && !isNaN(v) ? v : parseFloat(v);
+    if (n == null || isNaN(n)) n = 0;
+    el.value = String(Math.round(n * 100000) / 100000);
+  }
+
+  function effectiveLabelViewCornerRadiusPx() {
+    var r = state.labelViewCornerRadiusPx | 0;
+    return Math.max(0, Math.min(r, 48));
+  }
+
+  function addRoundRectPath(ctx, x, y, w, h, r) {
+    if (w <= 0 || h <= 0) return;
+    r = Math.max(0, Math.min(r, w / 2, h / 2));
+    if (r <= 0.5) {
+      ctx.rect(x, y, w, h);
+      return;
+    }
+    if (typeof ctx.roundRect === 'function') {
+      ctx.roundRect(x, y, w, h, r);
+      return;
+    }
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function getFitTargetRect() {
+    var L = labelDots();
+    var M = marginDots();
+    var inner = innerDots();
+    if (!state.allowOutsidePrintable) {
+      return { minX: 0, minY: 0, maxX: inner.w, maxY: inner.h };
+    }
+    return { minX: -M.l, minY: -M.t, maxX: -M.l + L.w, maxY: -M.t + L.h };
+  }
+
+  function objectsOverflowRect(t) {
+    for (var i = 0; i < state.objects.length; i++) {
+      var b = objectBounds(state.objects[i]);
+      if (
+        b.x < t.minX - 0.5 ||
+        b.y < t.minY - 0.5 ||
+        b.x + b.w > t.maxX + 0.5 ||
+        b.y + b.h > t.maxY + 0.5
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function fitAllObjectsToCurrentTarget() {
+    syncCanvasSize();
+    var t = getFitTargetRect();
+    var iw = t.maxX - t.minX;
+    var ih = t.maxY - t.minY;
+    if (iw < 16 || ih < 16 || !state.objects.length) return;
+    var minX = Infinity;
+    var minY = Infinity;
+    var maxX = -Infinity;
+    var maxY = -Infinity;
+    state.objects.forEach(function (o) {
+      var b = objectBounds(o);
+      minX = Math.min(minX, b.x);
+      minY = Math.min(minY, b.y);
+      maxX = Math.max(maxX, b.x + b.w);
+      maxY = Math.max(maxY, b.y + b.h);
+    });
+    var uw = maxX - minX;
+    var uh = maxY - minY;
+    if (uw <= 0 || uh <= 0) return;
+    var pad = Math.max(2, Math.floor(Math.min(iw, ih) * 0.03));
+    var s = Math.min((iw - pad * 2) / uw, (ih - pad * 2) / uh, 1);
+    s = Math.max(0.08, Math.min(1, s));
+    state.objects.forEach(function (o) {
+      o.x = Math.round((o.x - minX) * s);
+      o.y = Math.round((o.y - minY) * s);
+      scaleObjectForCalibration(o, s);
+      if (o.type === 'barcode') normalizeBarcodeObject(o);
+      if (o.type === 'text') clampTextObjectFonts(o);
+    });
+    var maxX2 = -Infinity;
+    var maxY2 = -Infinity;
+    state.objects.forEach(function (o) {
+      var b = objectBounds(o);
+      maxX2 = Math.max(maxX2, b.x + b.w);
+      maxY2 = Math.max(maxY2, b.y + b.h);
+    });
+    var tw = maxX2;
+    var th = maxY2;
+    var tx = Math.round(t.minX + pad + Math.max(0, (iw - pad * 2 - tw) / 2));
+    var ty = Math.round(t.minY + pad + Math.max(0, (ih - pad * 2 - th) / 2));
+    state.objects.forEach(function (o) {
+      o.x += tx;
+      o.y += ty;
+    });
+    state.objects.forEach(function (o) {
+      clampObjectIntoInner(o);
+      if (o.type === 'barcode') normalizeBarcodeObject(o);
+    });
+  }
+
   function clampInner(ix, iy) {
     syncCanvasSize();
     var inner = innerDots();
     var M = marginDots();
-    var pad = state.allowOutsideLabel ? workspacePadDots() : 0;
+    var pad = workspacePadForClamping();
     var minX;
     var maxX;
     var minY;
     var maxY;
     if (!state.allowOutsidePrintable) {
-      minX = -pad;
-      maxX = inner.w - 1 + pad;
-      minY = -pad;
-      maxY = inner.h - 1 + pad;
+      minX = 0;
+      maxX = inner.w - 1;
+      minY = 0;
+      maxY = inner.h - 1;
     } else {
       minX = -M.l - pad;
       maxX = inner.w + M.r - 1 + pad;
@@ -1469,6 +1722,7 @@
     state.printCalibration.visible = false;
     state.flexHeader = true;
     syncPrintCalibrationFromMargins();
+    clampPrintCalibrationRect();
     state.objects.forEach(function (o) {
       clampObjectIntoInner(o);
       if (o.type === 'barcode') normalizeBarcodeObject(o);
@@ -1542,7 +1796,7 @@
       clampTextObjectFonts(o);
     } else if (o.type === 'barcode') {
       if (symIs2d(o.sym)) {
-        o.mag = Math.max(1, Math.min(10, Math.round((o.mag != null ? o.mag : 4) * s)));
+        o.mag = Math.max(1, Math.min(BARCODE_2D_MAG_MAX, Math.round((o.mag != null ? o.mag : 4) * s)));
       } else {
         o.barH = Math.max(20, Math.min(400, Math.round((o.barH || 60) * s)));
         o.moduleW = Math.max(1, Math.min(6, Math.round((o.moduleW || 2) * s)));
@@ -1673,14 +1927,10 @@
       if (o.type === 'barcode') normalizeBarcodeObject(o);
     });
     syncPrintCalibrationFromMargins();
-    var mL = document.getElementById('mL');
-    var mT = document.getElementById('mT');
-    var mR = document.getElementById('mR');
-    var mB = document.getElementById('mB');
-    if (mL) mL.value = state.marginL;
-    if (mT) mT.value = state.marginT;
-    if (mR) mR.value = state.marginR;
-    if (mB) mB.value = state.marginB;
+    setDomInputNumber('mL', state.marginL);
+    setDomInputNumber('mT', state.marginT);
+    setDomInputNumber('mR', state.marginR);
+    setDomInputNumber('mB', state.marginB);
     var msg = document.getElementById('calApplyMsg');
     if (msg) {
       msg.textContent = doScale
@@ -1708,11 +1958,13 @@
       if (msg) msg.textContent = 'Select a Box object on the canvas first.';
       return;
     }
+    var M = marginDots();
+    var b = objectBounds(o);
     var pc = state.printCalibration;
-    pc.lx = Math.round(o.x);
-    pc.ly = Math.round(o.y);
-    pc.lw = Math.round(o.boxW != null ? o.boxW : 80);
-    pc.lh = Math.round(o.boxH != null ? o.boxH : 40);
+    pc.lx = Math.round(M.l + b.x);
+    pc.ly = Math.round(M.t + b.y);
+    pc.lw = Math.round(b.w);
+    pc.lh = Math.round(b.h);
     clampPrintCalibrationRect();
     pc.visible = true;
     if (calShow) calShow.checked = true;
@@ -1767,7 +2019,7 @@
     var hPx = fh * px;
     var targetWPx = Math.max(fw * px, text.length * fw * px * 0.58);
     var Lb = labelDots();
-    var pd = state.allowOutsideLabel ? workspacePadDots() : 0;
+    var pd = workspacePadForClamping();
     var maxWdots = (state.allowOutsidePrintable ? Lb.w : inner.w) + 2 * pd;
     var maxHdots = (state.allowOutsidePrintable ? Lb.h : inner.h) + 2 * pd;
     var maxBoxWp = Math.max(24, maxWdots * px - 4);
@@ -1822,7 +2074,7 @@
 
   function computeBarcodeCoreDots(o) {
     var sym = String(o.sym || 'qr').toLowerCase();
-    var mag = Math.max(1, Math.min(10, parseInt(o.mag, 10) || 4));
+    var mag = Math.max(1, Math.min(BARCODE_2D_MAG_MAX, parseInt(o.mag, 10) || 4));
     var modW = Math.max(1, Math.min(6, parseInt(o.moduleW, 10) || 2));
     var bh = Math.max(20, Math.min(400, parseInt(o.barH, 10) || 60));
     var dLayout = qrEffectiveData(o);
@@ -1965,10 +2217,16 @@
   function rebuildBarcodeLogoGfa(o) {
     if (!o._logoEl || !o._logoEl.complete || String(o.sym || '').toLowerCase() !== 'qr') return;
     o._logoDesignKey = null;
+    clampQrLogoPct(o);
     var core = computeBarcodeCoreDots(o);
     var qr = Math.min(core.w, core.h);
     var pct = o.logoPct != null ? o.logoPct : 20;
-    var side = Math.max(8, Math.round((qr * Math.max(8, Math.min(28, pct))) / 100));
+    var desired = (qr * Math.max(QR_LOGO_PCT_MIN, Math.min(qrLogoMaxPctForObject(o), pct))) / 100;
+    var side = snapQrLogoSideDots(o, desired);
+    o.logoPct = Math.min(
+      qrLogoMaxPctForObject(o),
+      Math.max(QR_LOGO_PCT_MIN, qrLogoPctFromSideDots(o, side))
+    );
     var th = o.logoThreshold != null ? o.logoThreshold : 140;
     var g = rasterToGFA(o._logoEl, side, side, th);
     o.logoGfaHex = g.hex;
@@ -1977,6 +2235,7 @@
     o.logoGfaTotal = g.total;
     o.logoW = side;
     o.logoH = side;
+    scheduleMergedQrLogoGfa(o);
   }
 
   function normalizeBarcodeObject(o) {
@@ -1992,7 +2251,7 @@
       o.hrAlign = 'center';
     }
     if (o.logoPct == null || isNaN(o.logoPct)) o.logoPct = 20;
-    o.logoPct = Math.max(8, Math.min(28, o.logoPct));
+    clampQrLogoPct(o);
     delete o.barW;
     invalidateBarcodeQrCache(o);
     if (o.sym === 'qr' && o.logoDataUrl && !o._logoEl) {
@@ -2186,6 +2445,7 @@
       hasL ? '1' : '0',
       o.labelPos || 'none',
       o.logoPct | 0,
+      o.logoW | 0,
       Math.round(bw),
       Math.round(bh)
     ].join('\t');
@@ -2219,6 +2479,16 @@
         function (err) {
           o._qrPendingKey = '';
           if (err || rasterGen !== o._qrRasterGen) return;
+          var showLogoPreview =
+            o._logoEl &&
+            o._logoEl.complete &&
+            o._logoEl.naturalWidth &&
+            o.logoDataUrl &&
+            String(o.sym || '').toLowerCase() === 'qr';
+          if (showLogoPreview && o.logoW > 0) {
+            var cdPunch = computeBarcodeCoreDots(o);
+            punchCenterWhiteInQrCanvas(cvs, cdPunch.w, cdPunch.h, o.logoW);
+          }
           o._qrDrawKey = cacheKey;
           draw();
         }
@@ -2340,14 +2610,14 @@
 
   function clampObjectIntoInner(o) {
     syncCanvasSize();
-    var pd = state.allowOutsideLabel ? workspacePadDots() : 0;
+    var pd = workspacePadForClamping();
     var b = objectBounds(o);
     if (!state.allowOutsidePrintable) {
       var inner = innerDots();
-      var minX = -pd;
-      var minY = -pd;
-      var maxR = inner.w + pd;
-      var maxB = inner.h + pd;
+      var minX = 0;
+      var minY = 0;
+      var maxR = inner.w;
+      var maxB = inner.h;
       for (var iter = 0; iter < 8; iter++) {
         b = objectBounds(o);
         if (b.x < minX) o.x += minX - b.x;
@@ -2391,10 +2661,10 @@
     var h = b.h;
     var tol = SNAP_TOL_DOTS;
 
-    var pd = state.allowOutsideLabel ? workspacePadDots() : 0;
+    var pd = workspacePadForClamping();
     var rects = state.allowOutsidePrintable
       ? [{ x: -M.l - pd, y: -M.t - pd, w: L.w + 2 * pd, h: L.h + 2 * pd }]
-      : [{ x: -pd, y: -pd, w: inner.w + 2 * pd, h: inner.h + 2 * pd }];
+      : [{ x: 0, y: 0, w: inner.w, h: inner.h }];
     state.objects.forEach(function (o2) {
       if (!o2 || o2.id === o.id) return;
       var br = objectBounds(o2);
@@ -2602,11 +2872,11 @@
     var inner = innerDots();
     var Lr = labelDots();
     var Mr = marginDots();
-    var pd = state.allowOutsideLabel ? workspacePadDots() : 0;
+    var pd = workspacePadForClamping();
     var maxX = (state.allowOutsidePrintable ? Lr.w - Mr.l : inner.w) + pd;
     var maxY = (state.allowOutsidePrintable ? Lr.h - Mr.t : inner.h) + pd;
     if (o.type === 'barcode') {
-      o.mag = Math.max(1, Math.min(10, parseInt(o.mag, 10) || 4));
+      o.mag = Math.max(1, Math.min(BARCODE_2D_MAG_MAX, parseInt(o.mag, 10) || 4));
       o.moduleW = Math.max(1, Math.min(6, parseInt(o.moduleW, 10) || 2));
       o.barH = Math.max(20, Math.min(400, parseInt(o.barH, 10) || 60));
       var bt = computeBarcodeTotalDots(o);
@@ -2694,7 +2964,7 @@
         clampTextObjectFonts(o);
       } else if (o.type === 'barcode') {
         if (symIs2d(o.sym)) {
-          o.mag = Math.max(1, Math.min(10, (s.mag != null ? s.mag : 4) + Math.round((ddx + ddy) / 14)));
+          o.mag = Math.max(1, Math.min(BARCODE_2D_MAG_MAX, (s.mag != null ? s.mag : 4) + Math.round((ddx + ddy) / 14)));
         } else {
           o.moduleW = Math.max(1, Math.min(6, (s.moduleW != null ? s.moduleW : 2) + Math.round(ddx / 24)));
           o.barH = Math.max(20, Math.min(400, (s.barH || 60) + ddy));
@@ -2720,7 +2990,7 @@
         o.x = s.x + ddx;
         o.y = s.y + ddy;
         if (symIs2d(o.sym)) {
-          o.mag = Math.max(1, Math.min(10, (s.mag != null ? s.mag : 4) - Math.round((ddx + ddy) / 14)));
+          o.mag = Math.max(1, Math.min(BARCODE_2D_MAG_MAX, (s.mag != null ? s.mag : 4) - Math.round((ddx + ddy) / 14)));
         } else {
           o.moduleW = Math.max(1, Math.min(6, (s.moduleW != null ? s.moduleW : 2) - Math.round(ddx / 24)));
           o.barH = Math.max(20, Math.min(400, (s.barH || 60) - ddy));
@@ -2754,6 +3024,8 @@
     if (o.type === 'barcode') invalidateBarcodeQrCache(o);
     if (o.type === 'barcode' && o.sym === 'qr' && o._logoEl && o.logoDataUrl) {
       rebuildBarcodeLogoGfa(o);
+    } else if (o.type === 'barcode') {
+      scheduleMergedQrLogoGfa(o);
     }
     updatePropInputsFromObject(o);
     pushZplFromModelSoon();
@@ -2793,22 +3065,41 @@
     var ly = labelOriginY;
     var lw = L.w * px;
     var lh = L.h * px;
+    var rCorner = effectiveLabelViewCornerRadiusPx();
 
     ctx.fillStyle = '#2d323c';
     ctx.fillRect(0, 0, canvas.width, RULER);
     ctx.fillRect(0, RULER, RULER, canvas.height - RULER);
 
-    ctx.strokeStyle = '#5c6370';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(lx - 0.5, ly - 0.5, lw + 1, lh + 1);
+    if (rCorner <= 0) {
+      ctx.strokeStyle = '#5c6370';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(lx - 0.5, ly - 0.5, lw + 1, lh + 1);
 
-    ctx.fillStyle = '#fafafa';
-    ctx.fillRect(lx, ly, lw, lh);
+      ctx.fillStyle = '#fafafa';
+      ctx.fillRect(lx, ly, lw, lh);
 
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(lx, ly, lw, lh);
-    ctx.clip();
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(lx, ly, lw, lh);
+      ctx.clip();
+    } else {
+      ctx.strokeStyle = '#5c6370';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      addRoundRectPath(ctx, lx - 0.5, ly - 0.5, lw + 1, lh + 1, rCorner);
+      ctx.stroke();
+
+      ctx.beginPath();
+      addRoundRectPath(ctx, lx, ly, lw, lh, rCorner);
+      ctx.fillStyle = '#fafafa';
+      ctx.fill();
+
+      ctx.save();
+      ctx.beginPath();
+      addRoundRectPath(ctx, lx, ly, lw, lh, rCorner);
+      ctx.clip();
+    }
 
     var stripe = ctx.createLinearGradient(0, 0, 8, 8);
     stripe.addColorStop(0, 'rgba(220,38,38,0.07)');
@@ -2968,9 +3259,8 @@
         var insideHr = lp === 'inside' && hr;
         var holeSidePx = 0;
         if (symLow === 'qr') {
-          if (hasLogoDraw) {
-            holeSidePx =
-              Math.min(bw, bh) * ((o.logoPct != null ? o.logoPct : 20) / 100) + 4;
+          if (hasLogoDraw && o.logoW > 0) {
+            holeSidePx = o.logoW * px;
           } else if (insideHr) {
             holeSidePx = Math.min(bw, bh) * 0.26 + 2;
           }
@@ -2993,10 +3283,11 @@
           }
         }
         if (hasLogoDraw) {
-          var pctDraw = o.logoPct != null ? o.logoPct : 20;
-          var sidePx = Math.min(bw, bh) * (Math.max(8, Math.min(28, pctDraw)) / 100);
-          var lx = p.x + (bw - sidePx) / 2;
-          var ly = p.y + (bh - sidePx) / 2;
+          var lw = o.logoW > 0 ? o.logoW : snapQrLogoSideDots(o, (Math.min(coreDots.w, coreDots.h) * (o.logoPct != null ? o.logoPct : 20)) / 100);
+          var sidePx = lw * px;
+          var posL = qrLogoCanvasTopLeftPx(p, bw, bh, sidePx);
+          var lx = posL.lx;
+          var ly = posL.ly;
           var logoPrev = getBarcodeLogoDesignerRasterCanvas(o);
           if (logoPrev) {
             ctx.drawImage(logoPrev, lx, ly, sidePx, sidePx);
@@ -3101,6 +3392,9 @@
         : '';
       if (state.allowOutsideLabel) {
         extraOut += ' · canvas workspace on (gray pad is interactive).';
+      }
+      if (!state.allowOutsidePrintable && state.allowOutsideLabel) {
+        extraOut += ' · moves stay inside printable area.';
       }
       drEl.textContent =
         'Label ' +
@@ -3260,7 +3554,7 @@
     var bo = zplOrientLetterFromRotQ(o.rotQ);
     var d = String(o.data || '[barcode]');
     var h = Math.max(20, Math.min(400, parseInt(o.barH, 10) || 60));
-    var mag = Math.max(1, Math.min(10, parseInt(o.mag, 10) || 4));
+    var mag = Math.max(1, Math.min(BARCODE_2D_MAG_MAX, parseInt(o.mag, 10) || 4));
     var modW = Math.max(1, Math.min(6, parseInt(o.moduleW, 10) || 2));
     var sym = String(o.sym || 'qr').toLowerCase();
     var pos = o.labelPos || 'none';
@@ -3271,6 +3565,17 @@
     var fw = barcodeHrFontW(o);
     var hasLogo =
       sym === 'qr' && o.logoGfaHex && o.logoW > 0 && o.logoH > 0 && o.logoGfaTotal > 0;
+    var rqPlain = ((o.rotQ | 0) % 4 + 4) % 4;
+    var mergedQrLogo =
+      sym === 'qr' &&
+      hasLogo &&
+      rqPlain === 0 &&
+      !o.flipH &&
+      !o.flipV &&
+      o.qrMergedGfaHex &&
+      (o.qrMergedGfaTotal | 0) > 0 &&
+      (o.qrMergedGfaW | 0) === (core.w | 0) &&
+      (o.qrMergedGfaH | 0) === (core.h | 0);
 
     function pushHrField(ftx, fty) {
       if (pos === 'none' || !barcodeHumanText(o)) return;
@@ -3323,34 +3628,64 @@
 
     switch (sym) {
       case 'qr': {
-        out.push(
-          '^FO' + x + ',' + y + '^BQ' + bo + ',2,' + mag + (hasLogo ? ',H,7' : '')
-        );
-        out.push('^FH\\^FDLA,' + escapeFd(d) + '^FS');
-        if (hasLogo) {
-          var ox = x + Math.max(0, Math.floor((core.w - o.logoW) / 2));
-          var oy = y + Math.max(0, Math.floor((core.h - o.logoH) / 2));
-          var logoZ = tryGfaZ64Payload(o.logoGfaHex, o.logoGfaRowBytes, o.logoGfaTotal);
-          if (logoZ) {
+        if (mergedQrLogo) {
+          var mq = tryGfaZ64Payload(
+            o.qrMergedGfaHex,
+            o.qrMergedGfaRowBytes,
+            o.qrMergedGfaTotal
+          );
+          if (mq) {
             out.push(
-              '^FO' + ox + ',' + oy + '^GFA,' + logoZ.b + ',' + logoZ.c + ',' + logoZ.d + ',' + logoZ.field + '^FS'
+              '^FO' + x + ',' + y + '^GFA,' + mq.b + ',' + mq.c + ',' + mq.d + ',' + mq.field + '^FS'
             );
           } else {
             out.push(
               '^FO' +
-                ox +
+                x +
                 ',' +
-                oy +
+                y +
                 '^GFA,' +
-                o.logoGfaTotal +
+                o.qrMergedGfaTotal +
                 ',' +
-                o.logoGfaTotal +
+                o.qrMergedGfaTotal +
                 ',' +
-                o.logoGfaRowBytes +
+                o.qrMergedGfaRowBytes +
                 ',' +
-                o.logoGfaHex +
+                o.qrMergedGfaHex +
                 '^FS'
             );
+          }
+        } else {
+          out.push(
+            '^FO' + x + ',' + y + '^BQ' + bo + ',2,' + mag + (hasLogo ? ',H,7' : '')
+          );
+          out.push('^FH\\^FDLA,' + escapeFd(d) + '^FS');
+          if (hasLogo) {
+            var magZ = qrMagnificationDots(o);
+            var ox = x + qrLogoAlignedOffset(core.w, o.logoW, magZ);
+            var oy = y + qrLogoAlignedOffset(core.h, o.logoH, magZ);
+            var logoZ = tryGfaZ64Payload(o.logoGfaHex, o.logoGfaRowBytes, o.logoGfaTotal);
+            if (logoZ) {
+              out.push(
+                '^FO' + ox + ',' + oy + '^GFA,' + logoZ.b + ',' + logoZ.c + ',' + logoZ.d + ',' + logoZ.field + '^FS'
+              );
+            } else {
+              out.push(
+                '^FO' +
+                  ox +
+                  ',' +
+                  oy +
+                  '^GFA,' +
+                  o.logoGfaTotal +
+                  ',' +
+                  o.logoGfaTotal +
+                  ',' +
+                  o.logoGfaRowBytes +
+                  ',' +
+                  o.logoGfaHex +
+                  '^FS'
+              );
+            }
           }
         }
         emit2dHr(core.w, core.h);
@@ -3499,6 +3834,137 @@
     return { hex: hex.join(''), rowBytes: rowBytes, h: hDots, total: total };
   }
 
+  /** 1-bit GFA from an RGBA canvas (e.g. merged QR + logo). Transparent → white (no ink). */
+  function canvasBitmapToGFA(cvs, threshold) {
+    var wDots = cvs.width | 0;
+    var hDots = cvs.height | 0;
+    if (wDots < 1 || hDots < 1) {
+      return { hex: '', rowBytes: 0, h: 0, total: 0, w: 0 };
+    }
+    var th = threshold != null ? threshold : 140;
+    var id = cvs.getContext('2d').getImageData(0, 0, wDots, hDots);
+    var rowBytes = Math.ceil(wDots / 8);
+    var hex = [];
+    for (var row = 0; row < hDots; row++) {
+      for (var byte = 0; byte < rowBytes; byte++) {
+        var b = 0;
+        for (var bit = 0; bit < 8; bit++) {
+          var col = byte * 8 + bit;
+          var on = 0;
+          if (col < wDots) {
+            var i = (row * wDots + col) * 4;
+            var a = id.data[i + 3];
+            var lum =
+              0.299 * id.data[i] + 0.587 * id.data[i + 1] + 0.114 * id.data[i + 2];
+            on = a >= 128 && lum < th ? 1 : 0;
+          }
+          b = (b << 1) | on;
+        }
+        hex.push(('0' + b.toString(16)).slice(-2).toUpperCase());
+      }
+    }
+    var total = rowBytes * hDots;
+    return {
+      hex: hex.join(''),
+      rowBytes: rowBytes,
+      h: hDots,
+      total: total,
+      w: wDots
+    };
+  }
+
+  /**
+   * Labelary (and some renderers) paint ^BQ barcodes over later ^GFA fields. Build one bitmap:
+   * QR (high EC) + white center punch + thresholded logo, then emit a single ^GFA instead of ^BQ + logo.
+   */
+  function scheduleMergedQrLogoGfa(o) {
+    if (!o || o.type !== 'barcode') return;
+    if (String(o.sym || '').toLowerCase() !== 'qr' || !o.logoDataUrl) {
+      o.qrMergedGfaHex = null;
+      o.qrMergedGfaRowBytes = null;
+      o.qrMergedGfaTotal = 0;
+      o.qrMergedGfaW = 0;
+      o.qrMergedGfaH = 0;
+      o._qrMergedKey = '';
+      return;
+    }
+    if (!o._logoEl || !o._logoEl.complete || !o.logoGfaHex || !(o.logoW > 0)) {
+      o.qrMergedGfaHex = null;
+      o.qrMergedGfaRowBytes = null;
+      o.qrMergedGfaTotal = 0;
+      o.qrMergedGfaW = 0;
+      o.qrMergedGfaH = 0;
+      o._qrMergedKey = '';
+      return;
+    }
+    var core = computeBarcodeCoreDots(o);
+    var w = core.w | 0;
+    var h = core.h | 0;
+    if (w < 8 || h < 8) return;
+    var key = [
+      qrEffectiveData(o),
+      o.mag | 0,
+      o.logoPct | 0,
+      o.logoThreshold | 0,
+      w,
+      h,
+      o.logoW | 0,
+      o.logoH | 0
+    ].join('\t');
+    if (o._qrMergedKey === key && o.qrMergedGfaHex) return;
+    o._qrMergedGen = (o._qrMergedGen | 0) + 1;
+    var myGen = o._qrMergedGen;
+    withQrLib(function (Q) {
+      if (!Q || typeof Q.toCanvas !== 'function') return;
+      var cvs = document.createElement('canvas');
+      cvs.width = w;
+      cvs.height = h;
+      Q.toCanvas(
+        cvs,
+        qrEffectiveData(o),
+        {
+          errorCorrectionLevel: 'H',
+          margin: 0,
+          width: w,
+          color: { dark: '#000000', light: '#ffffff' }
+        },
+        function (err) {
+          if (err || myGen !== o._qrMergedGen) return;
+          punchCenterWhiteInQrCanvas(cvs, w, h, o.logoW);
+          var lp = getBarcodeLogoDesignerRasterCanvas(o);
+          var ctx = cvs.getContext('2d');
+          if (lp && o.logoW > 0 && o.logoH > 0) {
+            var lx = Math.max(0, Math.round((w - o.logoW) / 2));
+            var ly = Math.max(0, Math.round((h - o.logoH) / 2));
+            ctx.drawImage(lp, lx, ly, o.logoW, o.logoH);
+          }
+          var th = o.logoThreshold != null ? o.logoThreshold : 140;
+          var g = canvasBitmapToGFA(cvs, th);
+          if (!g.hex || g.total < 1) return;
+          o.qrMergedGfaHex = g.hex;
+          o.qrMergedGfaRowBytes = g.rowBytes;
+          o.qrMergedGfaTotal = g.total;
+          o.qrMergedGfaW = g.w;
+          o.qrMergedGfaH = g.h;
+          o._qrMergedKey = key;
+          if (state.importedZpl === null) {
+            pushZplFromModel();
+          } else {
+            schedulePreview(state.importedZpl);
+          }
+          tryPersist();
+          draw();
+        }
+      );
+    });
+  }
+
+  function invalidateBarcodeQrCacheAndRemerge(ob) {
+    if (!ob || ob.type !== 'barcode') return;
+    invalidateBarcodeQrCache(ob);
+    scheduleMergedQrLogoGfa(ob);
+  }
+
   function updateImportBanner() {
     var b = document.getElementById('importBanner');
     if (b) b.style.display = state.importedZpl !== null ? 'block' : 'none';
@@ -3643,6 +4109,7 @@
         lh: state.printCalibration.lh | 0
       },
       labelaryPreviewEnabled: state.labelaryPreviewEnabled !== false,
+      labelViewCornerRadiusPx: Math.max(0, Math.min(48, state.labelViewCornerRadiusPx | 0)),
       objects: state.objects.map(function (o) {
         var c = Object.assign({}, o);
         delete c._imgEl;
@@ -3655,6 +4122,13 @@
         delete c._qrDrawKey;
         delete c._qrPendingKey;
         delete c._qrRasterGen;
+        delete c.qrMergedGfaHex;
+        delete c.qrMergedGfaRowBytes;
+        delete c.qrMergedGfaTotal;
+        delete c.qrMergedGfaW;
+        delete c.qrMergedGfaH;
+        delete c._qrMergedKey;
+        delete c._qrMergedGen;
         return c;
       })
     };
@@ -3745,6 +4219,10 @@
         : 'printer';
     state.allowOutsidePrintable = !!s.allowOutsidePrintable;
     state.allowOutsideLabel = !!s.allowOutsideLabel;
+    state.labelViewCornerRadiusPx =
+      s.labelViewCornerRadiusPx != null
+        ? Math.max(0, Math.min(48, parseInt(s.labelViewCornerRadiusPx, 10) || 0))
+        : 0;
     var pcIn = s.printCalibration;
     if (
       pcIn &&
@@ -3872,13 +4350,14 @@
   }
 
   function writeDimsToUi() {
-    document.getElementById('wIn').value = state.labelWIn;
-    document.getElementById('hIn').value = state.labelHIn;
-    document.getElementById('dpi').value = String(state.dpi);
-    document.getElementById('mL').value = state.marginL;
-    document.getElementById('mT').value = state.marginT;
-    document.getElementById('mR').value = state.marginR;
-    document.getElementById('mB').value = state.marginB;
+    setDomInputNumber('wIn', state.labelWIn);
+    setDomInputNumber('hIn', state.labelHIn);
+    var dpiEl0 = document.getElementById('dpi');
+    if (dpiEl0) dpiEl0.value = String(state.dpi || 203);
+    setDomInputNumber('mL', state.marginL);
+    setDomInputNumber('mT', state.marginT);
+    setDomInputNumber('mR', state.marginR);
+    setDomInputNumber('mB', state.marginB);
     document.getElementById('linkMargin').checked = state.linkMargin;
     var fhUi = document.getElementById('flexHeader');
     if (fhUi) fhUi.checked = state.flexHeader;
@@ -3902,6 +4381,11 @@
     if (tdm) tdm.checked = !!state.useTestDataMode;
     var ple = document.getElementById('previewLabelaryEnabled');
     if (ple) ple.checked = state.labelaryPreviewEnabled !== false;
+    var lcr = effectiveLabelViewCornerRadiusPx();
+    var lcrInp = document.getElementById('labelCornerRadiusPx');
+    if (lcrInp) lcrInp.value = String(lcr);
+    var lcrChk = document.getElementById('labelRoundedCorners');
+    if (lcrChk) lcrChk.checked = lcr > 0;
     refreshFlexPlaceSelects();
     refreshFlexTestDataUi();
     writePrintSettingsToUi();
@@ -3987,8 +4471,12 @@
 
   function focusSettingsFirstField(tab) {
     if (tab === 'appearance') {
-      var td = document.getElementById('themeDark');
-      if (td) td.focus();
+      var lr = document.getElementById('labelRoundedCorners');
+      if (lr) lr.focus();
+      else {
+        var td = document.getElementById('themeDark');
+        if (td) td.focus();
+      }
     } else if (tab === 'layout') {
       var ftp = document.getElementById('flexTextPlace');
       if (ftp) ftp.focus();
@@ -4899,6 +5387,13 @@
     delete c._qrDrawKey;
     delete c._qrPendingKey;
     delete c._qrRasterGen;
+    delete c.qrMergedGfaHex;
+    delete c.qrMergedGfaRowBytes;
+    delete c.qrMergedGfaTotal;
+    delete c.qrMergedGfaW;
+    delete c.qrMergedGfaH;
+    delete c._qrMergedKey;
+    delete c._qrMergedGen;
     var plain;
     try {
       plain = JSON.parse(JSON.stringify(c));
@@ -5225,6 +5720,7 @@
       });
       html += '</select></div>';
       var isQr = String(o.sym || '').toLowerCase() === 'qr';
+      var lpMax = isQr ? Math.max(QR_LOGO_PCT_MIN, Math.round(qrLogoMaxPctForObject(o))) : 95;
       html +=
         '<div class="prop" id="bcLogoWrap" style="display:' +
         (isQr ? 'block' : 'none') +
@@ -5232,15 +5728,31 @@
       html +=
         '<div style="margin-top:0.35rem"><label>Logo size (% of QR) <span id="bcLogoPctVal">' +
         (o.logoPct != null ? o.logoPct : 20) +
-        '%</span></label><input type="range" data-k="logoPct" min="8" max="28" step="1" value="' +
+        '%</span></label><input type="range" data-k="logoPct" min="8" max="' +
+        lpMax +
+        '" step="1" value="' +
         (o.logoPct != null ? o.logoPct : 20) +
-        '" /></div>';
+        '" title="Snaps to whole QR modules in ZPL; max is a safe scan limit for this symbol (EC H)." /></div>';
+      if (isQr) {
+        var modD = qrMagnificationDots(o);
+        var mxDots = qrMaxLogoSideDots(o);
+        html +=
+          '<p class="hint" style="margin:0.25rem 0 0;font-size:11px">Logo snaps to <strong>' +
+          modD +
+          '</strong>-dot modules (magnification). Safe max about <strong>' +
+          Math.round(qrLogoMaxPctForObject(o)) +
+          '%</strong> (~' +
+          mxDots +
+          '×' +
+          mxDots +
+          ' dots) for this QR payload.</p>';
+      }
       html +=
         '<div class="prop" style="margin-top:0.35rem"><label>Logo B/W threshold</label><input type="number" data-k="logoThreshold" min="0" max="255" value="' +
         (o.logoThreshold != null ? o.logoThreshold : 140) +
         '" /></div></div>';
       html += '<div class="prop"><label>1D bar height (dots)</label><input type="number" data-k="barH" min="20" max="400" value="' + (o.barH || 60) + '" /></div>';
-      html += '<div class="prop"><label>2D magnification (QR/DM)</label><input type="number" data-k="mag" min="1" max="10" value="' + (o.mag || 4) + '" /></div>';
+      html += '<div class="prop"><label>2D magnification (QR/DM)</label><input type="number" data-k="mag" min="1" max="12" value="' + (o.mag || 4) + '" /></div>';
       html += '<div class="prop"><label>1D module width (^BY)</label><input type="number" data-k="moduleW" min="1" max="6" value="' + (o.moduleW || 2) + '" /></div>';
       html +=
         '<p class="hint" style="margin:0;font-size:11px">Resize the barcode on the label: <strong>SE handle</strong> changes magnification (2D) or module width &amp; bar height (1D). Size matches ZPL preview.</p>';
@@ -5294,7 +5806,7 @@
         else if (kind === 'rot-ccw') cur.rotQ = (cur.rotQ + 3) % 4;
         else if (kind === 'flipH') cur.flipH = !cur.flipH;
         else if (kind === 'flipV') cur.flipV = !cur.flipV;
-        if (cur.type === 'barcode') invalidateBarcodeQrCache(cur);
+        if (cur.type === 'barcode') invalidateBarcodeQrCacheAndRemerge(cur);
         clampObjectIntoInner(cur);
         refreshZpl();
         draw();
@@ -5324,7 +5836,7 @@
       bcDsSel.addEventListener('change', function () {
         o.dataSource = bcDsSel.value === 'custom' ? 'custom' : 'flex';
         if (o.dataSource === 'flex') o.data = '[barcode]';
-        invalidateBarcodeQrCache(o);
+        invalidateBarcodeQrCacheAndRemerge(o);
         renderProps();
         pushZplFromModel();
         draw();
@@ -5472,6 +5984,9 @@
     if (o.type === 'barcode') {
       if (k === 'hrFontH') o.hrFontH = Math.max(8, Math.min(120, parseInt(o.hrFontH, 10) || 15));
       if (k === 'hrFontW') o.hrFontW = Math.max(6, Math.min(120, parseInt(o.hrFontW, 10) || 11));
+      if (k === 'mag') {
+        o.mag = Math.max(1, Math.min(BARCODE_2D_MAG_MAX, parseInt(o.mag, 10) || 4));
+      }
       var invQr =
         k === 'mag' ||
         k === 'data' ||
@@ -5487,7 +6002,7 @@
       rebuildImageGfa(o);
     }
     if (o.type === 'barcode' && (k === 'logoPct' || k === 'logoThreshold') && o._logoEl && o.sym === 'qr') {
-      o.logoPct = Math.max(8, Math.min(28, o.logoPct != null ? o.logoPct : 20));
+      clampQrLogoPct(o);
       rebuildBarcodeLogoGfa(o);
       var sp = document.getElementById('bcLogoPctVal');
       if (sp && k === 'logoPct') sp.textContent = o.logoPct + '%';
@@ -5506,13 +6021,19 @@
       clampResizeForObject(o);
       clampObjectIntoInner(o);
     }
+    if (o.type === 'barcode') scheduleMergedQrLogoGfa(o);
     pushZplFromModel();
     draw();
     renderElementList();
     if (o.type === 'box' && k === 'boxFill') {
       renderProps();
     }
-    if (o.type === 'barcode' && k === 'sym') {
+    if (
+      o.type === 'barcode' &&
+      (k === 'sym' ||
+        (String(o.sym || '').toLowerCase() === 'qr' &&
+          (k === 'mag' || k === 'data' || k === 'logoPct' || k === 'logoThreshold')))
+    ) {
       renderProps();
     }
   }
@@ -5597,7 +6118,10 @@
     var core = computeBarcodeCoreDots(o);
     var qr = Math.min(core.w, core.h);
     var pct = o.logoPct != null ? o.logoPct : 20;
-    var side = Math.max(8, Math.round((qr * Math.max(8, Math.min(28, pct))) / 100));
+    var side =
+      o.logoW > 0
+        ? o.logoW
+        : snapQrLogoSideDots(o, (qr * Math.max(QR_LOGO_PCT_MIN, Math.min(qrLogoMaxPctForObject(o), pct))) / 100);
     var th = o.logoThreshold != null ? o.logoThreshold : 140;
     var key = side + '|' + th;
     if (o._logoDesignKey === key && o._logoDesignCanvas && o._logoDesignCanvas.width === side) {
@@ -5698,13 +6222,14 @@
     }
 
     function writeDims() {
-      document.getElementById('wIn').value = state.labelWIn;
-      document.getElementById('hIn').value = state.labelHIn;
-      document.getElementById('dpi').value = String(state.dpi);
-      document.getElementById('mL').value = state.marginL;
-      document.getElementById('mT').value = state.marginT;
-      document.getElementById('mR').value = state.marginR;
-      document.getElementById('mB').value = state.marginB;
+      setDomInputNumber('wIn', state.labelWIn);
+      setDomInputNumber('hIn', state.labelHIn);
+      var dpiW = document.getElementById('dpi');
+      if (dpiW) dpiW.value = String(state.dpi || 203);
+      setDomInputNumber('mL', state.marginL);
+      setDomInputNumber('mT', state.marginT);
+      setDomInputNumber('mR', state.marginR);
+      setDomInputNumber('mB', state.marginB);
       document.getElementById('linkMargin').checked = state.linkMargin;
       var fhUi = document.getElementById('flexHeader');
       if (fhUi) fhUi.checked = state.flexHeader;
@@ -5763,12 +6288,30 @@
     var printableOnlyEl = document.getElementById('printableAreaOnly');
     if (printableOnlyEl) {
       printableOnlyEl.addEventListener('change', function () {
+        var wasOutsidePrintable = state.allowOutsidePrintable;
         readDims();
-        if (!state.allowOutsidePrintable) {
+        var nowOutsidePrintable = state.allowOutsidePrintable;
+        if (wasOutsidePrintable && !nowOutsidePrintable) {
+          var innerT = innerDots();
+          var innerRect = { minX: 0, minY: 0, maxX: innerT.w, maxY: innerT.h };
+          if (objectsOverflowRect(innerRect)) {
+            var fitP = window.confirm(
+              'Printable area only is now on. Some objects extend outside the green printable region.\n\n' +
+                'OK — Scale and reposition to fit inside (uniform scale; barcode sizes and fonts may change).\n' +
+                'Cancel — Keep positions; the canvas will clip what sticks out.'
+            );
+            if (fitP) fitAllObjectsToCurrentTarget();
+            else
+              state.objects.forEach(function (ob) {
+                clampObjectIntoInner(ob);
+              });
+          }
+        } else if (!nowOutsidePrintable) {
           state.objects.forEach(function (ob) {
             clampObjectIntoInner(ob);
           });
         }
+        refreshZpl();
         draw();
         tryPersist();
       });
@@ -5776,12 +6319,29 @@
     var allowOutsideLabelEl = document.getElementById('allowOutsideLabel');
     if (allowOutsideLabelEl) {
       allowOutsideLabelEl.addEventListener('change', function () {
+        var wasWs = state.allowOutsideLabel;
         readDims();
-        if (!state.allowOutsideLabel) {
+        var nowWs = state.allowOutsideLabel;
+        if (wasWs && !nowWs) {
+          var t = getFitTargetRect();
+          if (objectsOverflowRect(t)) {
+            var fitW = window.confirm(
+              'Canvas workspace is now off. Some objects sit outside the allowed layout region.\n\n' +
+                'OK — Scale and reposition to fit (uniform scale; barcode sizes and fonts may change).\n' +
+                'Cancel — Keep positions; the canvas will clip what sticks out.'
+            );
+            if (fitW) fitAllObjectsToCurrentTarget();
+            else
+              state.objects.forEach(function (ob) {
+                clampObjectIntoInner(ob);
+              });
+          }
+        } else if (!nowWs) {
           state.objects.forEach(function (ob) {
             clampObjectIntoInner(ob);
           });
         }
+        refreshZpl();
         draw();
         tryPersist();
       });
@@ -5890,8 +6450,9 @@
       fbps.addEventListener('input', function () {
         state.flexBarcodePreviewSample = fbps.value;
         state.objects.forEach(function (ob) {
-          if (ob.type === 'barcode') invalidateBarcodeQrCache(ob);
+          if (ob.type === 'barcode') invalidateBarcodeQrCacheAndRemerge(ob);
         });
+        pushZplFromModelSoon();
         draw();
         tryPersist();
       });
@@ -5977,7 +6538,7 @@
         state.useTestDataMode = !!useTestDataModeEl.checked;
         tryPersist();
         state.objects.forEach(function (ob) {
-          if (ob.type === 'barcode') invalidateBarcodeQrCache(ob);
+          if (ob.type === 'barcode') invalidateBarcodeQrCacheAndRemerge(ob);
         });
         pushZplFromModelSoon();
         draw();
@@ -6005,7 +6566,7 @@
         state.flexTestDataValues[key] = t.value;
         tryPersist();
         state.objects.forEach(function (ob) {
-          if (ob.type === 'barcode') invalidateBarcodeQrCache(ob);
+          if (ob.type === 'barcode') invalidateBarcodeQrCacheAndRemerge(ob);
         });
         pushZplFromModelSoon();
         draw();
@@ -6030,7 +6591,7 @@
         refreshFlexTestDataUi();
         tryPersist();
         state.objects.forEach(function (ob) {
-          if (ob.type === 'barcode') invalidateBarcodeQrCache(ob);
+          if (ob.type === 'barcode') invalidateBarcodeQrCacheAndRemerge(ob);
         });
         pushZplFromModelSoon();
         draw();
@@ -6117,7 +6678,7 @@
       flexSub.addEventListener('change', function () {
         readFlexConnectionsFromUi();
         state.objects.forEach(function (ob) {
-          if (ob.type === 'barcode') invalidateBarcodeQrCache(ob);
+          if (ob.type === 'barcode') invalidateBarcodeQrCacheAndRemerge(ob);
         });
         draw();
         schedulePreview(getZplForPreview());
@@ -6237,7 +6798,7 @@
           st.className = 'status';
         }
         state.objects.forEach(function (ob) {
-          if (ob.type === 'barcode') invalidateBarcodeQrCache(ob);
+          if (ob.type === 'barcode') invalidateBarcodeQrCacheAndRemerge(ob);
         });
         draw();
         schedulePreview(getZplForPreview());
@@ -6249,7 +6810,7 @@
       btnFlexClearMerge.addEventListener('click', function () {
         state.flexMergeValues = {};
         state.objects.forEach(function (ob) {
-          if (ob.type === 'barcode') invalidateBarcodeQrCache(ob);
+          if (ob.type === 'barcode') invalidateBarcodeQrCacheAndRemerge(ob);
         });
         draw();
         schedulePreview(getZplForPreview());
@@ -6764,6 +7325,39 @@
   if (themeLightEl) {
     themeLightEl.addEventListener('change', function () {
       if (themeLightEl.checked) applyUiTheme('light');
+    });
+  }
+  var labelRoundedChk = document.getElementById('labelRoundedCorners');
+  var labelRadiusInp = document.getElementById('labelCornerRadiusPx');
+  if (labelRoundedChk) {
+    labelRoundedChk.addEventListener('change', function () {
+      if (labelRoundedChk.checked) {
+        if (!(state.labelViewCornerRadiusPx > 0)) state.labelViewCornerRadiusPx = 10;
+        if (labelRadiusInp) labelRadiusInp.value = String(Math.min(48, state.labelViewCornerRadiusPx | 0));
+      } else {
+        state.labelViewCornerRadiusPx = 0;
+        if (labelRadiusInp) labelRadiusInp.value = '0';
+      }
+      draw();
+      tryPersist();
+    });
+  }
+  if (labelRadiusInp) {
+    labelRadiusInp.addEventListener('input', function () {
+      var v = parseInt(labelRadiusInp.value, 10);
+      if (isNaN(v)) return;
+      v = Math.max(0, Math.min(48, v));
+      state.labelViewCornerRadiusPx = v;
+      if (labelRoundedChk) labelRoundedChk.checked = v > 0;
+      draw();
+    });
+    labelRadiusInp.addEventListener('change', function () {
+      var v = Math.max(0, Math.min(48, parseInt(labelRadiusInp.value, 10) || 0));
+      labelRadiusInp.value = String(v);
+      state.labelViewCornerRadiusPx = v;
+      if (labelRoundedChk) labelRoundedChk.checked = v > 0;
+      draw();
+      tryPersist();
     });
   }
   if (hadSaved) document.getElementById('preset').value = String(PRESETS.length - 1);
