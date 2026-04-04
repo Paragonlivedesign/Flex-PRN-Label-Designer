@@ -16,6 +16,8 @@
   Save project / Open project stores the full layout (and optional imported ZPL) as JSON.
 
   SETTINGS (bottom-right): Appearance, Layout (Flex header, tool defaults), Help, Printer, Flex API, Scan & load, Test data, About. "Test data" next to Calibrate toggles sample merge values for preview.
+  Export calibration / Import calibration (Calibrate dialog): label size, margins, and yellow-box calibration only — no canvas objects.
+  Export all settings / Import all settings (Printer tab): printer JSON + Flex API JSON + calibration slice + preview toggles in one file (templates key reserved for future label templates).
 -->
 <html lang="en">
 <head>
@@ -130,7 +132,16 @@
     .btn:hover { background: var(--accent-hi); }
     .btn.secondary { background: var(--border); color: var(--text); }
     .btn.danger { background: var(--danger); }
-    .main { display: flex; flex: 1; min-height: 0; gap: 0; position: relative; }
+    /* Designer stacks above bottom ZPL/Labelary row if compositor overlap (e.g. after rotate + preview). */
+    .main {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      gap: 0;
+      position: relative;
+      z-index: 1;
+      isolation: isolate;
+    }
     .left {
       flex: 1; min-width: 0; min-height: 0; padding: 0.75rem;
       overflow-x: hidden; overflow-y: auto;
@@ -147,6 +158,8 @@
       height: 6px; cursor: row-resize; background: var(--border);
       flex-shrink: 0; transition: background 0.15s;
       display: flex; align-items: center; justify-content: center;
+      position: relative;
+      z-index: 1;
     }
     .split-h:hover, .split-h.active { background: var(--accent); }
     .split-h::after { content: '⋯'; color: var(--muted); font-size: 14px; pointer-events: none; }
@@ -199,6 +212,8 @@
     .bottom {
       display: grid; grid-template-columns: 1fr minmax(260px, 42%); gap: 0.75rem;
       padding: 0.75rem; border-top: none; min-height: 180px; overflow: hidden;
+      position: relative;
+      z-index: 0;
     }
     .zpl-box { display: flex; flex-direction: column; min-height: 0; }
     .zpl-box textarea {
@@ -209,12 +224,32 @@
       display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
       min-height: 120px; max-height: min(58vh, 520px); overflow: auto;
     }
-    .preview-box img {
-      max-width: 100%; max-height: min(52vh, 480px); object-fit: contain;
-      background: #fff; border-radius: 4px; border: 1px solid var(--border);
+    .preview-img-wrap {
+      position: relative;
+      display: inline-block;
+      max-width: 100%;
     }
-    .preview-box img.preview-img--idle {
+    .preview-img-wrap img {
+      display: block;
+      max-width: 100%;
+      max-height: min(52vh, 480px);
+      object-fit: contain;
+      background: #fff;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+    .preview-img-wrap img.preview-img--idle {
       display: none;
+    }
+    .preview-margin-overlay {
+      position: absolute;
+      pointer-events: none;
+      box-sizing: border-box;
+      border: 1px dotted rgba(248, 113, 113, 0.55);
+      box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.08);
+      border-radius: 1px;
+      display: none;
+      z-index: 1;
     }
     .status { font-size: 11px; color: var(--muted); }
     .status.err { color: var(--danger); }
@@ -446,6 +481,7 @@
       background: var(--inset-bg);
     }
     .preview-labelary-row {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem;
       align-self: stretch; width: 100%; max-width: 420px; margin-top: 0.2rem;
       padding-top: 0.35rem; border-top: 1px solid var(--border);
     }
@@ -680,7 +716,10 @@
       </div>
       <div class="preview-box">
         <strong style="font-size:12px;color:var(--muted)">Preview (Labelary)</strong>
-        <img id="previewImg" alt="Label preview" />
+        <div class="preview-img-wrap" id="previewImgWrap">
+          <img id="previewImg" alt="Label preview" />
+          <div id="previewMarginOverlay" class="preview-margin-overlay" aria-hidden="true"></div>
+        </div>
         <span class="status" id="previewScale"></span>
         <span class="status" id="previewStatus"></span>
         <p class="preview-net-note">
@@ -692,6 +731,10 @@
           <label class="chk" style="margin:0" title="When off, no requests to api.labelary.com; canvas and ZPL still update.">
             <input type="checkbox" id="previewLabelaryEnabled" checked />
             Labelary preview (network)
+          </label>
+          <label class="chk" style="margin:0" title="Designer-only: dotted outline of the printable area (inside margins) over the preview image. Not sent to Labelary or the printer.">
+            <input type="checkbox" id="previewMarginOverlayToggle" />
+            Show margin outline
           </label>
         </div>
       </div>
@@ -714,6 +757,14 @@
           <li><strong>Apply</strong> — Click <strong>Apply to margins</strong>. Use <strong>Scale content to fit box</strong> only if you need everything shrunk to a smaller printable area.</li>
         </ol>
         <p class="hint print-panel-hint" style="margin:0 0 0.65rem;font-size:11px;color:var(--muted)">The reference box is only a visual guide — margins do not change until you Apply. Afterward you can delete the box or leave it.</p>
+        <p class="hint print-panel-hint" style="margin:0 0 0.5rem;font-size:11px;color:var(--muted)">
+          <strong>Save / load calibration</strong> — export label size, margins, and yellow-box state as JSON (same data is also inside a full settings file and inside Save project).
+        </p>
+        <div class="row-btns" style="margin-bottom:0.5rem">
+          <button type="button" class="btn secondary" id="btnExportCalibration" style="padding:0.2rem 0.5rem;font-size:11px">Export calibration…</button>
+          <button type="button" class="btn secondary" id="btnImportCalibration" style="padding:0.2rem 0.5rem;font-size:11px">Import calibration…</button>
+        </div>
+        <input type="file" id="fileCalibrationSettings" accept=".json,application/json" style="display:none" />
         <div class="cal-panel">
           <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem 0.75rem">
             <label class="chk" style="margin:0"><input type="checkbox" id="calShowOverlay" /> Show yellow box</label>
@@ -805,7 +856,8 @@
             <p><strong>Label</strong> size is the physical media; <strong>margins</strong> define the printable area inside it (green dashed). <strong>Red tint</strong> is still on the label — uncheck <strong>Printable area only</strong> to place there. With <strong>Printable area only</strong> on, elements stay inside the green area even if <strong>Canvas workspace</strong> is on (the gray pad is only for easier clicking around the label). ZPL still maps the white label rectangle.</p>
             <p><strong>Red tint</strong> = margin (won’t print as content unless you use tokens that print there). <strong>Reset label defaults</strong> in the header restores 2×1 in, 203 DPI, 0.05&quot; margins on all sides (header fields update), printable-area-only on, canvas workspace off, and hides the yellow calibration overlay; your objects stay. Uncheck <strong>Printable area only</strong> to use margin bands (wrap labels). Tightening printable area or turning off canvas workspace may ask to fit or clip content.</p>
             <p><strong>Appearance</strong> — optional <strong>rounded label corners</strong> on the canvas (cosmetic; does not change ZPL).</p>
-            <p><strong>Print calibration</strong> — <strong>Calibrate</strong> (bottom-right): draw a <strong>Box</strong> for the real print area, print, adjust that box on the canvas to match the physical label, then show the yellow box and either drag it to match or use <strong>Match selected box</strong>, then <strong>Apply to margins</strong>. Pick a tool and <strong>click</strong> to place; drag to move. With an object selected, drag the <strong>blue corner squares</strong> (bottom-right = grow; top-left on shapes = shrink/move corner).</p>
+            <p><strong>Print calibration</strong> — <strong>Calibrate</strong> (bottom-right): draw a <strong>Box</strong> for the real print area, print, adjust that box on the canvas to match the physical label, then show the yellow box and either drag it to match or use <strong>Match selected box</strong>, then <strong>Apply to margins</strong>. Pick a tool and <strong>click</strong> to place; drag to move. With an object selected, drag the <strong>blue corner squares</strong> (bottom-right = grow; top-left on shapes = shrink/move corner). Use <strong>Export calibration</strong> / <strong>Import calibration</strong> in that dialog to share margin setup; <strong>Export all settings</strong> on the Printer tab bundles printer, Flex API, and calibration in one file.</p>
+            <p><strong>Labelary preview</strong> — <strong>Show margin outline</strong> draws a light red dotted rectangle over the preview image for the printable area (inside margins). It is display-only and does not change ZPL.</p>
             <p>Text: SE only — on-canvas size tracks ZPL <code>^AfN</code> (font <code>f</code> = 0, A–H, P–V) height/width (dots). Barcode: SE only (2D = magnification; QR pattern uses Labelary-compatible encoding when online).</p>
             <p><strong>Rotate / flip</strong> — in Properties, use ↺/↻ for 90° steps and Flip H/V. Exported ZPL sets orientation <strong>N/R/I/B</strong> (0°/90°/180°/270° CW) on <code>^A</code> (text) and <code>^BQ</code>/<code>^BC</code>/… (barcodes) so Labelary and printers apply rotation. <code>^FW</code> wraps lines/boxes/images that have no per-field angle. Flip is preview-only for text and barcodes.</p>
             <p>Snap, show grid, and grid spacing are <strong>under the canvas</strong>. <strong>Settings → Layout</strong> has the Flex header toggle and default merge tokens for new Text/Barcode tools.</p>
@@ -835,6 +887,14 @@
               <button type="button" class="btn secondary" id="btnLoadPrinterConfig">Load printer config…</button>
             </div>
             <input type="file" id="filePrinterConfig" accept=".json,application/json" style="display:none" />
+            <p class="hint print-panel-hint" style="margin-top:0.65rem">
+              <strong>All settings</strong> (one JSON): printer + Flex API + label calibration (size, margins, yellow box) + preview toggles. Use this when moving to another PC. The <code>templates</code> array is reserved for future label templates.
+            </p>
+            <div class="row-btns">
+              <button type="button" class="btn secondary" id="btnExportFullSettings">Export all settings…</button>
+              <button type="button" class="btn secondary" id="btnImportFullSettings">Import all settings…</button>
+            </div>
+            <input type="file" id="fileFullAppSettings" accept=".json,application/json" style="display:none" />
             <div class="row-btns">
               <button type="button" class="btn secondary" id="btnCopyPs">Copy PowerShell send</button>
               <button type="button" class="btn" id="btnRelaySend">Send via relay</button>
@@ -1390,7 +1450,9 @@
     settingsActiveTab: 'printer',
     settingsModalOpenerFabId: 'btnSettingsFab',
     calibrationModalOpenerFabId: 'btnCalibrateFab',
-    labelaryPreviewEnabled: true
+    labelaryPreviewEnabled: true,
+    /** Dotted margin outline on Labelary preview only (not in ZPL). */
+    previewMarginOverlay: false
   };
 
   var SNAP_TOL_DOTS = 8;
@@ -1942,6 +2004,7 @@
     renderProps();
     renderElementList();
     draw();
+    updatePreviewMarginOverlay();
   }
 
   function matchPrintCalibrationToSelectedBox() {
@@ -4109,6 +4172,7 @@
         lh: state.printCalibration.lh | 0
       },
       labelaryPreviewEnabled: state.labelaryPreviewEnabled !== false,
+      previewMarginOverlay: !!state.previewMarginOverlay,
       labelViewCornerRadiusPx: Math.max(0, Math.min(48, state.labelViewCornerRadiusPx | 0)),
       objects: state.objects.map(function (o) {
         var c = Object.assign({}, o);
@@ -4203,6 +4267,7 @@
         : {};
     state.useTestDataMode = !!s.useTestDataMode;
     state.labelaryPreviewEnabled = s.labelaryPreviewEnabled !== false;
+    state.previewMarginOverlay = !!s.previewMarginOverlay;
     state.flexUseMergedForPreviewPrint = s.flexUseMergedForPreviewPrint !== false;
     state.flexLastResponseText = s.flexLastResponseText != null ? String(s.flexLastResponseText) : '';
     var legacyConnTab = s.connectionsActiveTab;
@@ -4381,6 +4446,8 @@
     if (tdm) tdm.checked = !!state.useTestDataMode;
     var ple = document.getElementById('previewLabelaryEnabled');
     if (ple) ple.checked = state.labelaryPreviewEnabled !== false;
+    var pmg = document.getElementById('previewMarginOverlayToggle');
+    if (pmg) pmg.checked = !!state.previewMarginOverlay;
     var lcr = effectiveLabelViewCornerRadiusPx();
     var lcrInp = document.getElementById('labelCornerRadiusPx');
     if (lcrInp) lcrInp.value = String(lcr);
@@ -4609,6 +4676,182 @@
   }
 
   var PRINTER_CONFIG_VERSION = 1;
+
+  var APP_SETTINGS_CONFIG_VERSION = 1;
+  var SETTINGS_KIND_FULL = 'flex-label-designer-settings';
+  var SETTINGS_KIND_CALIBRATION = 'flex-label-calibration';
+
+  function getLabelCalibrationSlice() {
+    return {
+      labelWIn: state.labelWIn,
+      labelHIn: state.labelHIn,
+      dpi: state.dpi,
+      marginL: state.marginL,
+      marginT: state.marginT,
+      marginR: state.marginR,
+      marginB: state.marginB,
+      linkMargin: !!state.linkMargin,
+      flexHeader: !!state.flexHeader,
+      allowOutsidePrintable: !!state.allowOutsidePrintable,
+      allowOutsideLabel: !!state.allowOutsideLabel,
+      printCalibration: {
+        visible: !!state.printCalibration.visible,
+        lx: state.printCalibration.lx | 0,
+        ly: state.printCalibration.ly | 0,
+        lw: state.printCalibration.lw | 0,
+        lh: state.printCalibration.lh | 0
+      }
+    };
+  }
+
+  /**
+   * @returns {{ ok: boolean, message?: string }}
+   */
+  function applyLabelCalibrationSlice(lb) {
+    if (!lb || typeof lb !== 'object') {
+      return { ok: false, message: 'Missing label calibration data.' };
+    }
+    if (lb.labelWIn != null) {
+      var w = parseFloat(lb.labelWIn);
+      if (!isNaN(w) && w > 0) state.labelWIn = Math.max(0.25, Math.min(24, w));
+    }
+    if (lb.labelHIn != null) {
+      var h = parseFloat(lb.labelHIn);
+      if (!isNaN(h) && h > 0) state.labelHIn = Math.max(0.125, Math.min(24, h));
+    }
+    if (lb.dpi != null) {
+      var d = parseInt(lb.dpi, 10);
+      if (!isNaN(d) && d >= 72 && d <= 1200) state.dpi = d;
+    }
+    function finM(x, cur) {
+      var v = parseFloat(x);
+      if (x == null || isNaN(v)) return cur;
+      return Math.max(0, Math.min(3, v));
+    }
+    state.marginL = finM(lb.marginL, state.marginL);
+    state.marginT = finM(lb.marginT, state.marginT);
+    state.marginR = finM(lb.marginR, state.marginR);
+    state.marginB = finM(lb.marginB, state.marginB);
+    if (lb.linkMargin != null) state.linkMargin = !!lb.linkMargin;
+    if (lb.flexHeader != null) state.flexHeader = !!lb.flexHeader;
+    if (lb.allowOutsidePrintable != null) state.allowOutsidePrintable = !!lb.allowOutsidePrintable;
+    if (lb.allowOutsideLabel != null) state.allowOutsideLabel = !!lb.allowOutsideLabel;
+    var pcIn = lb.printCalibration;
+    if (
+      pcIn &&
+      typeof pcIn === 'object' &&
+      (pcIn.lw | 0) >= MIN_CALIB_INNER &&
+      (pcIn.lh | 0) >= MIN_CALIB_INNER
+    ) {
+      state.printCalibration.visible = !!pcIn.visible;
+      state.printCalibration.lx = pcIn.lx | 0;
+      state.printCalibration.ly = pcIn.ly | 0;
+      state.printCalibration.lw = pcIn.lw | 0;
+      state.printCalibration.lh = pcIn.lh | 0;
+      clampPrintCalibrationRect();
+    } else {
+      syncPrintCalibrationFromMargins();
+    }
+    state.objects.forEach(function (o) {
+      clampObjectIntoInner(o);
+      if (o.type === 'barcode') normalizeBarcodeObject(o);
+    });
+    return { ok: true };
+  }
+
+  function getFullAppSettingsObject() {
+    readFlexConnectionsFromUi();
+    readPrintFromUi();
+    return {
+      version: APP_SETTINGS_CONFIG_VERSION,
+      kind: SETTINGS_KIND_FULL,
+      savedAt: new Date().toISOString(),
+      printer: getPrinterConfigObject(),
+      flexApi: getFlexApiConfigObject(),
+      label: getLabelCalibrationSlice(),
+      preview: {
+        labelaryPreviewEnabled: state.labelaryPreviewEnabled !== false,
+        previewMarginOverlay: !!state.previewMarginOverlay
+      },
+      templates: []
+    };
+  }
+
+  function getCalibrationExportPayload() {
+    return {
+      version: APP_SETTINGS_CONFIG_VERSION,
+      kind: SETTINGS_KIND_CALIBRATION,
+      savedAt: new Date().toISOString(),
+      label: getLabelCalibrationSlice()
+    };
+  }
+
+  function finishSettingsImportUi() {
+    writeDimsToUi();
+    writeFlexConnectionsToUi();
+    writePrintSettingsToUi();
+    var pr = document.getElementById('preset');
+    if (pr) pr.value = String(PRESETS.length - 1);
+    var cshow = document.getElementById('calShowOverlay');
+    if (cshow) cshow.checked = !!state.printCalibration.visible;
+    var ple = document.getElementById('previewLabelaryEnabled');
+    if (ple) ple.checked = state.labelaryPreviewEnabled !== false;
+    var pmg = document.getElementById('previewMarginOverlayToggle');
+    if (pmg) pmg.checked = !!state.previewMarginOverlay;
+    refreshZpl();
+    draw();
+    schedulePreview(getZplForPreview());
+    updatePreviewMarginOverlay();
+    tryPersist();
+  }
+
+  /**
+   * @returns {{ ok: boolean, message?: string }}
+   */
+  function applyImportedBundleSettings(raw) {
+    if (!raw || typeof raw !== 'object') {
+      return { ok: false, message: 'Not a JSON object.' };
+    }
+    var k = raw.kind;
+    if (k === SETTINGS_KIND_CALIBRATION) {
+      var rCal = applyLabelCalibrationSlice(raw.label);
+      if (!rCal.ok) return rCal;
+      finishSettingsImportUi();
+      return { ok: true, message: 'Loaded calibration (label, margins, yellow box).' };
+    }
+    if (k === SETTINGS_KIND_FULL) {
+      if (raw.printer != null && typeof raw.printer === 'object') {
+        var rp = applyPrinterConfigObject(raw.printer);
+        if (!rp.ok) return rp;
+      }
+      if (raw.flexApi != null && typeof raw.flexApi === 'object') {
+        var rf = applyFlexApiConfigObject(raw.flexApi);
+        if (!rf.ok) return rf;
+      }
+      if (!raw.label || typeof raw.label !== 'object') {
+        return { ok: false, message: 'Full settings file missing label section.' };
+      }
+      var rLb = applyLabelCalibrationSlice(raw.label);
+      if (!rLb.ok) return rLb;
+      if (raw.preview && typeof raw.preview === 'object') {
+        if (raw.preview.labelaryPreviewEnabled != null) {
+          state.labelaryPreviewEnabled = !!raw.preview.labelaryPreviewEnabled;
+        }
+        if (raw.preview.previewMarginOverlay != null) {
+          state.previewMarginOverlay = !!raw.preview.previewMarginOverlay;
+        }
+      }
+      if (!state.labelaryPreviewEnabled) {
+        applyLabelaryDisabledPreviewState();
+      }
+      finishSettingsImportUi();
+      return { ok: true, message: 'Loaded printer, Flex API, label calibration, and preview options.' };
+    }
+    return {
+      ok: false,
+      message: 'Unrecognized file. Use Export all settings, Export calibration, or a matching JSON kind.'
+    };
+  }
 
   function getPrinterConfigObject() {
     readPrintFromUi();
@@ -4918,6 +5161,7 @@
     img.onerror = null;
     img.removeAttribute('src');
     img.classList.add('preview-img--idle');
+    updatePreviewMarginOverlay();
   }
 
   function previewImgClearIdle() {
@@ -4964,6 +5208,7 @@
       st.className = 'status';
     }
     if (scaleEl) scaleEl.textContent = '';
+    updatePreviewMarginOverlay();
   }
 
   function applyEmptyZplPreviewState() {
@@ -4986,6 +5231,7 @@
       st.className = 'status';
     }
     if (scaleEl) scaleEl.textContent = '';
+    updatePreviewMarginOverlay();
   }
 
   function updatePreviewScaleReadout() {
@@ -4994,12 +5240,14 @@
     if (!img || !el) return;
     if (!img.naturalWidth || !img.complete) {
       el.textContent = '';
+      updatePreviewMarginOverlay();
       return;
     }
     var rw = img.getBoundingClientRect().width;
     if (rw < 4) {
       el.textContent =
         'Native ' + img.naturalWidth + '×' + img.naturalHeight + ' px (layout width ~0 — expand bottom panel)';
+      updatePreviewMarginOverlay();
       return;
     }
     var pct = Math.round((rw / img.naturalWidth) * 100);
@@ -5011,6 +5259,63 @@
       ' px — shown at ~' +
       pct +
       '% in this panel (drag split above to enlarge)';
+    updatePreviewMarginOverlay();
+  }
+
+  /** Object-fit: contain — bitmap pixel rect inside the img element. */
+  function getPreviewImgContentRect(img) {
+    if (!img || !img.naturalWidth || !img.complete) return null;
+    var nw = img.naturalWidth;
+    var nh = img.naturalHeight;
+    var cw = img.clientWidth;
+    var ch = img.clientHeight;
+    if (!cw || !ch) return null;
+    var scale = Math.min(cw / nw, ch / nh);
+    var rw = nw * scale;
+    var rh = nh * scale;
+    var ox = (cw - rw) / 2;
+    var oy = (ch - rh) / 2;
+    return { ox: ox, oy: oy, rw: rw, rh: rh };
+  }
+
+  function updatePreviewMarginOverlay() {
+    var overlay = document.getElementById('previewMarginOverlay');
+    var img = document.getElementById('previewImg');
+    if (!overlay || !img) return;
+    if (!state.previewMarginOverlay || !state.labelaryPreviewEnabled) {
+      overlay.style.display = 'none';
+      return;
+    }
+    var zQuick = maybeSubstituteFlexTokens(getZplForPreview());
+    if (!zplHasPreviewableContent(zQuick)) {
+      overlay.style.display = 'none';
+      return;
+    }
+    if (img.classList.contains('preview-img--idle') || !img.naturalWidth) {
+      overlay.style.display = 'none';
+      return;
+    }
+    var L = labelDots();
+    var M = marginDots();
+    var inner = innerDots();
+    if (L.w <= 0 || L.h <= 0 || inner.w <= 0 || inner.h <= 0) {
+      overlay.style.display = 'none';
+      return;
+    }
+    var cr = getPreviewImgContentRect(img);
+    if (!cr) {
+      overlay.style.display = 'none';
+      return;
+    }
+    var fx = M.l / L.w;
+    var fy = M.t / L.h;
+    var fw = inner.w / L.w;
+    var fh = inner.h / L.h;
+    overlay.style.display = 'block';
+    overlay.style.left = cr.ox + fx * cr.rw + 'px';
+    overlay.style.top = cr.oy + fy * cr.rh + 'px';
+    overlay.style.width = Math.max(0, fw * cr.rw) + 'px';
+    overlay.style.height = Math.max(0, fh * cr.rh) + 'px';
   }
 
   function schedulePreview(zpl) {
@@ -5090,6 +5395,7 @@
         st.textContent = 'Preview failed (offline or blocked). ZPL below is still valid.';
         st.className = 'status err';
         if (scaleEl) scaleEl.textContent = '';
+        updatePreviewMarginOverlay();
       };
       img.src = labelaryUrlGet(zpl);
       return;
@@ -5130,6 +5436,7 @@
           st.textContent = 'Preview image failed to load.';
           st.className = 'status err';
           if (scaleEl) scaleEl.textContent = '';
+          updatePreviewMarginOverlay();
         };
         img.src = previewBlobUrl;
       })
@@ -5156,6 +5463,7 @@
               ' · ZPL for printer/Flex is still valid.';
             st.className = 'status err';
             if (scaleEl) scaleEl.textContent = '';
+            updatePreviewMarginOverlay();
           };
           img.src = fallback;
         } else {
@@ -5165,6 +5473,7 @@
             ' (ZPL with large ^GFA is often too long for GET; POST blocked?)';
           st.className = 'status err';
           if (scaleEl) scaleEl.textContent = '';
+          updatePreviewMarginOverlay();
         }
       });
   }
@@ -6248,6 +6557,7 @@
         clampPrintCalibrationRect();
         refreshZpl();
         draw();
+        updatePreviewMarginOverlay();
       }
     });
 
@@ -6264,6 +6574,7 @@
         preset.value = String(PRESETS.length - 1);
         refreshZpl();
         draw();
+        updatePreviewMarginOverlay();
       });
     });
     document.getElementById('linkMargin').addEventListener('change', function () {
@@ -6276,6 +6587,7 @@
       clampPrintCalibrationRect();
       refreshZpl();
       draw();
+      updatePreviewMarginOverlay();
     });
     var flexHeaderEl = document.getElementById('flexHeader');
     if (flexHeaderEl) {
@@ -6381,6 +6693,60 @@
     var calResetAllDefaults = document.getElementById('calResetAllDefaults');
     if (calResetAllDefaults) {
       calResetAllDefaults.addEventListener('click', resetLabelToFactoryDefaults);
+    }
+    var btnExportCalibration = document.getElementById('btnExportCalibration');
+    if (btnExportCalibration) {
+      btnExportCalibration.addEventListener('click', function () {
+        var msg = document.getElementById('calApplyMsg');
+        var payload = getCalibrationExportPayload();
+        var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'flex-label-calibration.json';
+        a.click();
+        URL.revokeObjectURL(a.href);
+        if (msg) {
+          msg.textContent = 'Exported calibration JSON (label size, margins, yellow box state).';
+          msg.style.color = '';
+        }
+      });
+    }
+    var btnImportCalibration = document.getElementById('btnImportCalibration');
+    var fileCalibrationSettings = document.getElementById('fileCalibrationSettings');
+    if (btnImportCalibration && fileCalibrationSettings) {
+      btnImportCalibration.addEventListener('click', function () {
+        fileCalibrationSettings.click();
+      });
+      fileCalibrationSettings.addEventListener('change', function (ev) {
+        var f = ev.target.files[0];
+        ev.target.value = '';
+        var msg = document.getElementById('calApplyMsg');
+        if (!f) return;
+        var r = new FileReader();
+        r.onload = function () {
+          try {
+            var data = JSON.parse(r.result);
+            var res = applyImportedBundleSettings(data);
+            if (!res.ok) {
+              if (msg) {
+                msg.textContent = res.message || 'Invalid calibration file.';
+                msg.style.color = 'var(--danger)';
+              }
+              return;
+            }
+            if (msg) {
+              msg.textContent = res.message || 'Calibration loaded.';
+              msg.style.color = '';
+            }
+          } catch (err) {
+            if (msg) {
+              msg.textContent = 'Could not read JSON: ' + (err.message || String(err)).slice(0, 100);
+              msg.style.color = 'var(--danger)';
+            }
+          }
+        };
+        r.readAsText(f, 'UTF-8');
+      });
     }
 
     function readSnapSettings() {
@@ -6554,7 +6920,23 @@
         } else {
           applyLabelaryDisabledPreviewState();
         }
+        updatePreviewMarginOverlay();
       });
+    }
+    var previewMarginToggle = document.getElementById('previewMarginOverlayToggle');
+    if (previewMarginToggle) {
+      previewMarginToggle.addEventListener('change', function () {
+        state.previewMarginOverlay = !!previewMarginToggle.checked;
+        tryPersist();
+        updatePreviewMarginOverlay();
+      });
+    }
+    var previewImgWrapEl = document.getElementById('previewImgWrap');
+    if (previewImgWrapEl && typeof ResizeObserver !== 'undefined') {
+      var previewMarginObs = new ResizeObserver(function () {
+        updatePreviewMarginOverlay();
+      });
+      previewMarginObs.observe(previewImgWrapEl);
     }
     var flexTestDataRows = document.getElementById('flexTestDataRows');
     if (flexTestDataRows) {
@@ -6938,6 +7320,55 @@
       r.readAsText(f, 'UTF-8');
     };
 
+    document.getElementById('btnExportFullSettings').onclick = function () {
+      var pst = document.getElementById('printStatus');
+      var payload = getFullAppSettingsObject();
+      var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'flex-label-designer-settings.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      if (pst) {
+        pst.textContent =
+          'Exported full settings (printer, Flex API, label calibration, preview toggles). File includes API token if set.';
+        pst.className = 'status';
+      }
+    };
+    document.getElementById('btnImportFullSettings').onclick = function () {
+      document.getElementById('fileFullAppSettings').click();
+    };
+    document.getElementById('fileFullAppSettings').onchange = function (ev) {
+      var f = ev.target.files[0];
+      ev.target.value = '';
+      var pst = document.getElementById('printStatus');
+      if (!f) return;
+      var r = new FileReader();
+      r.onload = function () {
+        try {
+          var data = JSON.parse(r.result);
+          var res = applyImportedBundleSettings(data);
+          if (!res.ok) {
+            if (pst) {
+              pst.textContent = res.message || 'Invalid settings file.';
+              pst.className = 'status err';
+            }
+            return;
+          }
+          if (pst) {
+            pst.textContent = res.message || 'Settings loaded.';
+            pst.className = 'status';
+          }
+        } catch (err) {
+          if (pst) {
+            pst.textContent = 'Could not read JSON: ' + (err.message || String(err)).slice(0, 100);
+            pst.className = 'status err';
+          }
+        }
+      };
+      r.readAsText(f, 'UTF-8');
+    };
+
     document.getElementById('btnCopyPs').onclick = function () {
       readPrintFromUi();
       readFlexConnectionsFromUi();
@@ -7072,6 +7503,7 @@
           draw();
           renderProps();
           setTool(state.tool || 'select');
+          updatePreviewMarginOverlay();
         } catch (err) {
           alert('Could not read project file. Use a .json saved from Save project.');
         }
@@ -7376,6 +7808,7 @@
   draw();
   requestAnimationFrame(function () {
     refitLayoutForViewport();
+    updatePreviewMarginOverlay();
   });
   setTool(state.tool || 'select');
 })();
