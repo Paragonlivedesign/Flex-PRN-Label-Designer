@@ -209,6 +209,76 @@
     .prop textarea { min-height: 56px; resize: vertical; font-family: ui-monospace, monospace; font-size: 12px; }
     .prop input.ro-inp { opacity: 0.85; cursor: default; }
     .prop input[type="range"] { width: 100%; padding: 0.2rem 0; }
+    .prop-image-size-row {
+      align-self: flex-start;
+      width: 100%;
+      max-width: 100%;
+    }
+    .prop-image-size-row > .prop-image-size-label {
+      display: block;
+      color: var(--muted);
+      margin-bottom: 0.2rem;
+      font-size: 11px;
+    }
+    .prop-image-size-fields {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: flex-end;
+      justify-content: flex-start;
+      gap: 0.35rem;
+    }
+    .prop-image-size-fields .img-dim-wrap {
+      flex: 0 0 auto;
+      width: 4.75rem;
+    }
+    .prop-image-size-fields .img-dim-wrap label {
+      display: block;
+      color: var(--muted);
+      margin-bottom: 0.15rem;
+      font-size: 11px;
+    }
+    .prop-image-size-fields .img-dim-wrap input[type="number"] {
+      width: 100%;
+      padding: 0.35rem 0.3rem;
+    }
+    .btn-aspect-link {
+      flex: 0 0 auto;
+      width: 2.15rem;
+      height: 2.15rem;
+      min-width: 2.15rem;
+      padding: 0;
+      margin: 0 0 0.02rem 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--muted);
+      cursor: pointer;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+      transition: border-color 0.12s, color 0.12s, background 0.12s, box-shadow 0.12s;
+    }
+    .btn-aspect-link:hover {
+      border-color: var(--accent);
+      color: var(--text);
+      background: var(--sel-bg);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    }
+    .btn-aspect-link:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .btn-aspect-link[aria-pressed="true"] {
+      color: var(--accent-hi);
+      border-color: var(--accent);
+      background: var(--sel-bg);
+    }
+    .btn-aspect-link-icon {
+      display: block;
+      pointer-events: none;
+    }
     .bottom {
       display: grid; grid-template-columns: 1fr minmax(260px, 42%); gap: 0.75rem;
       padding: 0.75rem; border-top: none; min-height: 180px; overflow: hidden;
@@ -251,6 +321,81 @@
       display: none;
       z-index: 1;
     }
+    .preview-edge-overlay {
+      position: absolute;
+      box-sizing: border-box;
+      border: 2px solid rgba(99, 102, 241, 0.75);
+      box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.2);
+      border-radius: 2px;
+      display: none;
+      z-index: 2;
+      pointer-events: none;
+      touch-action: none;
+    }
+    .preview-edge-overlay.preview-edge-overlay--interactive {
+      pointer-events: auto;
+      cursor: move;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .preview-cal-actions-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.35rem;
+      width: 100%;
+      max-width: 100%;
+    }
+    .preview-label-stage {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      max-width: 100%;
+      background: var(--preview-platen-bg, #e0e0e0);
+      border-radius: 4px;
+      padding: 6px var(--preview-platen-pad-h, 6px);
+      box-sizing: border-box;
+    }
+    [data-theme="dark"] .preview-label-stage,
+    .preview-label-stage {
+      --preview-platen-bg: #2a2a2e;
+    }
+    [data-theme="light"] .preview-label-stage {
+      --preview-platen-bg: #e0e0e0;
+    }
+    .preview-label-frame--match .preview-label-stage {
+      align-self: flex-start;
+      width: 100%;
+      max-width: 100%;
+      aspect-ratio: var(--preview-label-ar-w) / var(--preview-label-ar-h);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      background: #fafafa;
+      border: 1px solid #5c6370;
+    }
+    .preview-label-frame--match .preview-img-wrap {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .preview-label-frame--match .preview-img-wrap img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 0;
+      border: none;
+      background: #fff;
+    }
     .status { font-size: 11px; color: var(--muted); }
     .status.err { color: var(--danger); }
     .row-btns { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.35rem; }
@@ -288,6 +433,9 @@
     }
     .el-item .el-grip:active { cursor: grabbing; }
     .el-item .el-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+    .el-item.el-item--hidden {
+      opacity: 0.55;
+    }
     .el-item .el-layer-actions {
       display: flex; flex-direction: row; align-items: center; gap: 3px;
       flex-shrink: 0; margin-left: 2px;
@@ -426,9 +574,6 @@
     .print-modal-backdrop.open {
       display: flex;
     }
-    #calibrationModal {
-      z-index: 10001;
-    }
     .print-modal-card {
       background: var(--panel);
       border: 1px solid var(--border);
@@ -493,7 +638,6 @@
     .preview-net-note a { color: var(--accent-hi); }
     .preview-net-note code { font-size: 10px; color: var(--text); }
     .settings-card { max-width: min(640px, 100vw - 2rem); }
-    .calibration-card { max-width: min(560px, 100vw - 2rem); }
     .cal-workflow-ol {
       list-style: decimal;
       margin: 0 0 0.6rem 1.15rem;
@@ -505,6 +649,63 @@
     .cal-workflow-ol li { margin-bottom: 0.35rem; }
     .cal-workflow-ol li:last-child { margin-bottom: 0; }
     .cal-workflow-ol strong { color: var(--text); }
+    .cal-section {
+      margin-bottom: 0.7rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .cal-section:last-of-type { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .cal-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin: 0 0 0.35rem;
+    }
+    .cal-section--danger {
+      margin-top: 0.35rem;
+      padding-top: 0.55rem;
+      border-top: 1px solid var(--border);
+      border-bottom: none;
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+    .cal-section-hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin: 0 0 0.4rem;
+      line-height: 1.45;
+    }
+    .cal-section-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem 0.6rem;
+    }
+    .cal-rebuild-readout {
+      font-size: 11px;
+      color: var(--text);
+      font-family: ui-monospace, monospace;
+      margin: 0 0 0.4rem;
+      line-height: 1.4;
+    }
+    .cal-radio-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      margin: 0 0 0.5rem;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .cal-radio-row label {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.4rem;
+      cursor: pointer;
+      line-height: 1.35;
+    }
+    .cal-radio-row input { margin-top: 0.2rem; flex-shrink: 0; }
     .conn-tabs {
       display: flex; flex-wrap: wrap; gap: 0.25rem;
       padding: 0.5rem 0.85rem 0; border-bottom: 1px solid var(--border);
@@ -648,9 +849,16 @@
           <label>MB <input type="number" class="hdr-inp-xs" id="mB" step="0.01" min="0" title="Margin bottom" /></label>
         </fieldset>
         <label class="chk"><input type="checkbox" id="linkMargin" /> Same</label>
-        <label class="chk" title="When checked, placement stays in the green printable area. Uncheck to also use the red margin bands on the label (e.g. wrap-around)."><input type="checkbox" id="printableAreaOnly" checked /> Printable area only</label>
-        <label class="chk" title="Allow click/drag in the gray pad around the label. Content there is for layout reference; the printer only uses the white label rectangle."><input type="checkbox" id="allowOutsideLabel" /> Canvas workspace</label>
-        <button type="button" class="btn secondary" id="btnResetLabelDefaults" style="padding:0.2rem 0.45rem;font-size:11px" title="2×1 in, 203 DPI, 0.05&quot; margins, printable area only, canvas workspace off, calibration overlay off; keeps objects">Reset defaults</button>
+        <label class="chk" title="Show/hide pink margin box on the canvas. Drag corners and edges to define the printable area, then click Set margins."
+          ><input type="checkbox" id="marginBoxShow" /> Margin box</label
+        >
+        <button type="button" class="btn secondary" id="btnMarginBoxApply"
+          style="padding:0.2rem 0.45rem;font-size:11px"
+          title="Set header margins (ML/MT/MR/MB) from the pink margin box position. Keeps label W×H.">Set margins</button>
+        <label class="chk" title="When checked, placement stays in the green printable area. Uncheck to also use the red margin bands on the label (e.g. wrap-around)."><input type="checkbox" id="printableAreaOnly" /> Printable area only</label>
+        <label class="chk" title="Allow click/drag in the gray pad around the label. Content there is for layout reference; the printer only uses the white label rectangle."><input type="checkbox" id="allowOutsideLabel" checked /> Canvas workspace</label>
+        <button type="button" class="btn secondary" id="btnResetLabelDefaults" style="padding:0.2rem 0.45rem;font-size:11px" title="Factory label: 2×1 in, 203 DPI, default margins, printable off, workspace on, yellow/pink overlays off, designer ZPL (no import); turns off Labelary margin outline and label-edge overlays; keeps objects (clamped)">Reset defaults</button>
+        <button type="button" class="btn secondary" id="btnResetCanvas" style="padding:0.2rem 0.45rem;font-size:11px" title="Exit imported ZPL, printable area off, workspace on, hide yellow/pink overlays, turn off ZPL calibration ticks, square label on canvas; keeps label size, margins, objects, and Labelary preview margin/edge toggles">Reset canvas</button>
         <div style="flex:1;min-width:0.5rem"></div>
         <span id="dotsReadout" style="color:var(--muted);font-size:11px;white-space:nowrap"></span>
       </div>
@@ -675,18 +883,20 @@
         </div>
         <div
           class="snap-row snap-row--under-canvas"
-          title="Object snap: edges &amp; centers align within ~8 dots. Grid snap applies on an axis only if object snap didn’t pull that axis."
+          title="Object snap: edges &amp; centers align within ~8 dots. Center guides add a light red crosshair at printable center (snappable). Grid from center spaces grid lines through that center. Grid snap applies on an axis only if object snap didn’t pull that axis."
         >
           <label class="chk"><input type="checkbox" id="snapObjects" checked /> Snap to objects &amp; edges</label>
           <label class="chk"><input type="checkbox" id="snapShowGrid" /> Show grid</label>
           <label class="chk"><input type="checkbox" id="snapGrid" /> Snap to grid</label>
+          <label class="chk"><input type="checkbox" id="snapGridFromCenter" /> Grid from center</label>
+          <label class="chk"><input type="checkbox" id="snapShowCenterLines" /> Show center guides</label>
           <label>Grid W <input type="number" id="gridW" min="2" max="999" step="1" value="20" /></label>
           <label>Grid H <input type="number" id="gridH" min="2" max="999" step="1" value="20" /></label>
         </div>
       </div>
       <div class="split-v" id="splitV" title="Drag to resize panels"></div>
       <aside class="right" id="props">
-        <h2>Layers <span style="font-size:10px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0">(top first)</span></h2>
+        <h2>Layers <span style="font-size:10px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0">(top first)</span><span style="font-size:10px;font-weight:400;color:var(--muted);display:block;margin-top:0.15rem">Eye = hide on canvas &amp; ZPL (still in stack)</span></h2>
         <div id="elementList" class="el-list" aria-label="Label layers"></div>
         <h2 class="sec">Properties</h2>
         <p class="hint" id="noSel">Select an object on the label or in the list.</p>
@@ -714,11 +924,14 @@
         <textarea id="zplOut" readonly spellcheck="false"></textarea>
         <span class="status" id="zplLen"></span>
       </div>
-      <div class="preview-box">
+      <div class="preview-box" id="previewBox">
         <strong style="font-size:12px;color:var(--muted)">Preview (Labelary)</strong>
-        <div class="preview-img-wrap" id="previewImgWrap">
-          <img id="previewImg" alt="Label preview" />
-          <div id="previewMarginOverlay" class="preview-margin-overlay" aria-hidden="true"></div>
+        <div class="preview-label-stage" id="previewLabelStage">
+          <div class="preview-img-wrap" id="previewImgWrap">
+            <img id="previewImg" alt="Label preview" />
+            <div id="previewMarginOverlay" class="preview-margin-overlay" aria-hidden="true"></div>
+            <div id="previewEdgeOverlay" class="preview-edge-overlay" aria-hidden="true"></div>
+          </div>
         </div>
         <span class="status" id="previewScale"></span>
         <span class="status" id="previewStatus"></span>
@@ -732,49 +945,6 @@
             <input type="checkbox" id="previewLabelaryEnabled" checked />
             Labelary preview (network)
           </label>
-          <label class="chk" style="margin:0" title="Designer-only: dotted outline of the printable area (inside margins) over the preview image. Not sent to Labelary or the printer.">
-            <input type="checkbox" id="previewMarginOverlayToggle" />
-            Show margin outline
-          </label>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="calibrationModal" class="print-modal-backdrop" aria-hidden="true">
-    <div class="print-modal-card calibration-card" role="dialog" aria-modal="true" aria-labelledby="calibrationModalTitle" tabindex="-1">
-      <div class="print-modal-head">
-        <h2 id="calibrationModalTitle">Print calibration</h2>
-        <button type="button" class="print-modal-close" id="btnCloseCalibration" aria-label="Close">×</button>
-      </div>
-      <div class="print-modal-body">
-        <p class="hint print-panel-hint" style="margin-top:0;margin-bottom:0.35rem">Typical workflow:</p>
-        <ol class="cal-workflow-ol">
-          <li><strong>Reference on layout</strong> — Use the <strong>Box</strong> tool and draw a rectangle where you believe the printer can actually print (inside the physical label).</li>
-          <li><strong>Print a test</strong> — Print that label (or a copy with the box visible).</li>
-          <li><strong>Adjust from reality</strong> — On the canvas, move or resize the box so it matches what you saw on the <strong>printed</strong> label (ink limits, non-printing zones).</li>
-          <li><strong>Calibrate</strong> — Open <strong>Calibrate</strong>, turn on <strong>Show yellow box</strong>, and either drag the yellow rectangle to match your reference box or click <strong>Match selected box</strong> (with that Box still selected).</li>
-          <li><strong>Apply</strong> — Click <strong>Apply to margins</strong>. Use <strong>Scale content to fit box</strong> only if you need everything shrunk to a smaller printable area.</li>
-        </ol>
-        <p class="hint print-panel-hint" style="margin:0 0 0.65rem;font-size:11px;color:var(--muted)">The reference box is only a visual guide — margins do not change until you Apply. Afterward you can delete the box or leave it.</p>
-        <p class="hint print-panel-hint" style="margin:0 0 0.5rem;font-size:11px;color:var(--muted)">
-          <strong>Save / load calibration</strong> — export label size, margins, and yellow-box state as JSON (same data is also inside a full settings file and inside Save project).
-        </p>
-        <div class="row-btns" style="margin-bottom:0.5rem">
-          <button type="button" class="btn secondary" id="btnExportCalibration" style="padding:0.2rem 0.5rem;font-size:11px">Export calibration…</button>
-          <button type="button" class="btn secondary" id="btnImportCalibration" style="padding:0.2rem 0.5rem;font-size:11px">Import calibration…</button>
-        </div>
-        <input type="file" id="fileCalibrationSettings" accept=".json,application/json" style="display:none" />
-        <div class="cal-panel">
-          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem 0.75rem">
-            <label class="chk" style="margin:0"><input type="checkbox" id="calShowOverlay" /> Show yellow box</label>
-            <button type="button" class="btn secondary" id="calReset" style="padding:0.2rem 0.5rem;font-size:11px">Reset to printable</button>
-            <button type="button" class="btn secondary" id="calMatchSelectedBox" style="padding:0.2rem 0.5rem;font-size:11px" title="Snap the yellow box to the selected Box object (position and size). Select the reference box on the canvas first.">Match selected box</button>
-            <button type="button" class="btn secondary" id="calApply" style="padding:0.2rem 0.5rem;font-size:11px">Apply to margins</button>
-            <label class="chk" style="margin:0" title="Scale positions and sizes before remapping; can change barcode density"><input type="checkbox" id="calScaleContent" /> Scale content to fit box</label>
-            <button type="button" class="btn secondary" id="calResetAllDefaults" style="padding:0.2rem 0.5rem;font-size:11px" title="Same as header Reset defaults: full factory label settings">Reset all to defaults</button>
-          </div>
-          <p id="calApplyMsg" class="hint" style="margin:0.35rem 0 0;font-size:11px;color:var(--muted)"></p>
         </div>
       </div>
     </div>
@@ -784,7 +954,7 @@
     <label class="fab-testdata-chk" title="When on, sample strings from Settings → Test data fill merge tokens on the canvas and in substituted ZPL (PowerShell / relay). Non-empty test values override API-loaded values for those tokens.">
       <input type="checkbox" id="useTestDataMode" /> Test data
     </label>
-    <button type="button" class="fab-calibrate" id="btnCalibrateFab" title="Print calibration: yellow box, apply margins">Calibrate</button>
+    <button type="button" class="fab-calibrate" id="btnCalibrateFab" title="Toggle yellow calibration box and ZPL calibration ticks on/off. Use Settings → Calibration for grid, ticks, and apply controls.">Calibrate</button>
     <button type="button" class="conn-fab" id="btnSettingsFab" title="Theme, layout, printer, Flex API, scan, test data, help, about">Settings</button>
   </div>
 
@@ -798,6 +968,7 @@
         <button type="button" class="conn-tab" id="connTabAppearance" data-conn-tab="appearance" role="tab" aria-selected="false">Appearance</button>
         <button type="button" class="conn-tab" id="connTabLayout" data-conn-tab="layout" role="tab" aria-selected="false">Layout</button>
         <button type="button" class="conn-tab" id="connTabHelp" data-conn-tab="help" role="tab" aria-selected="false">Help</button>
+        <button type="button" class="conn-tab" id="connTabCalibration" data-conn-tab="calibration" role="tab" aria-selected="false">Calibration</button>
         <button type="button" class="conn-tab active" id="connTabPrinter" data-conn-tab="printer" role="tab" aria-selected="true">Printer</button>
         <button type="button" class="conn-tab" id="connTabFlex" data-conn-tab="flex" role="tab" aria-selected="false">Flex API</button>
         <button type="button" class="conn-tab" id="connTabScan" data-conn-tab="scan" role="tab" aria-selected="false">Scan &amp; load</button>
@@ -817,6 +988,29 @@
           <label class="fl" style="margin:0">Corner radius (px)
             <input type="number" id="labelCornerRadiusPx" class="fl-input" min="0" max="48" step="1" value="10" style="max-width:5.5rem" title="0–48; applied when rounded corners is checked" />
           </label>
+          <p class="hint print-panel-hint" style="margin:0.75rem 0 0.35rem">Canvas workspace (gray pad around the label)</p>
+          <label class="fl" style="margin:0;display:block;max-width:28rem" title="Designer only: space beyond the white label for dragging elements when “Canvas workspace” is on. Does not change ZPL. Larger values also extend the yellow calibration overlay reach."
+            >Workspace margin (px)
+            <input
+              type="number"
+              id="canvasWorkspacePadPx"
+              class="fl-input"
+              min="24"
+              max="240"
+              step="4"
+              value="72"
+              style="max-width:5.5rem"
+            />
+          </label>
+          <p class="hint print-panel-hint" style="margin:0.35rem 0 0;font-size:11px;max-width:28rem">
+            Default is 72 (twice the old 36). Range 24–240. Resize the canvas area if the window is small.
+          </p>
+          <p class="hint print-panel-hint" style="margin:0.75rem 0 0.35rem">Labelary preview (bottom panel)</p>
+          <label
+            class="chk"
+            style="margin:0;display:block;max-width:28rem"
+            title="Constrains the preview to the label’s width:height and clips with rounded corners when “Rounded label corners” is on. Does not change ZPL, Labelary, or print output."
+            ><input type="checkbox" id="previewMatchLabelFrameChk" /> Match designer label frame in preview</label>
         </div>
         <div id="connPanelLayout" class="conn-panel" role="tabpanel">
           <p class="hint print-panel-hint" style="margin-top:0">
@@ -854,14 +1048,174 @@
         <div id="connPanelHelp" class="conn-panel" role="tabpanel" tabindex="-1">
           <div class="settings-help-body">
             <p><strong>Label</strong> size is the physical media; <strong>margins</strong> define the printable area inside it (green dashed). <strong>Red tint</strong> is still on the label — uncheck <strong>Printable area only</strong> to place there. With <strong>Printable area only</strong> on, elements stay inside the green area even if <strong>Canvas workspace</strong> is on (the gray pad is only for easier clicking around the label). ZPL still maps the white label rectangle.</p>
-            <p><strong>Red tint</strong> = margin (won’t print as content unless you use tokens that print there). <strong>Reset label defaults</strong> in the header restores 2×1 in, 203 DPI, 0.05&quot; margins on all sides (header fields update), printable-area-only on, canvas workspace off, and hides the yellow calibration overlay; your objects stay. Uncheck <strong>Printable area only</strong> to use margin bands (wrap labels). Tightening printable area or turning off canvas workspace may ask to fit or clip content.</p>
-            <p><strong>Appearance</strong> — optional <strong>rounded label corners</strong> on the canvas (cosmetic; does not change ZPL).</p>
-            <p><strong>Print calibration</strong> — <strong>Calibrate</strong> (bottom-right): draw a <strong>Box</strong> for the real print area, print, adjust that box on the canvas to match the physical label, then show the yellow box and either drag it to match or use <strong>Match selected box</strong>, then <strong>Apply to margins</strong>. Pick a tool and <strong>click</strong> to place; drag to move. With an object selected, drag the <strong>blue corner squares</strong> (bottom-right = grow; top-left on shapes = shrink/move corner). Use <strong>Export calibration</strong> / <strong>Import calibration</strong> in that dialog to share margin setup; <strong>Export all settings</strong> on the Printer tab bundles printer, Flex API, and calibration in one file.</p>
+            <p><strong>Red tint</strong> = margin (won’t print as content unless you use tokens that print there). <strong>Reset label defaults</strong> in the header restores 2×1 in, 203 DPI, 0.05&quot; margins on all sides (header fields update), printable area off (full label), canvas workspace on, hides the yellow calibration overlay, clears imported ZPL back to designer ZPL, square label shell on canvas, and turns preview margin outline and label-edge overlay off; your objects stay. <strong>Reset canvas</strong> (header only) does the same canvas cleanup except it <strong>keeps</strong> those Labelary preview toggles (and any label-edge insets). It does not change label size or margins. Check <strong>Printable area only</strong> to lock placement to the green printable zone. Tightening printable area or turning off canvas workspace may ask to fit or clip content.</p>
+            <p><strong>Appearance</strong> — optional <strong>rounded label corners</strong> on the canvas (cosmetic; does not change ZPL). <strong>Workspace margin (px)</strong> sets how much gray pad surrounds the label for dragging elements off the sticker (default 72; 24–240); designer-only.</p>
+            <p><strong>Print calibration</strong> — use <strong>Settings → Calibration</strong> (or <strong>Calibrate</strong> in the corner to open that tab). Click <strong>Calibrate</strong> (corner FAB) to show the yellow box and enable calibration ZPL ticks. Sections cover Labelary margin/label-edge overlays, yellow box snap/match/apply, optional grid/ticks and ZPL tick marks, export/import, and reset guidance. <strong>Set printable area from yellow box</strong> sets label W×H, rulers, and <code>^PW</code>/<code>^LL</code> to the yellow overlay. Use the <strong>pink Margin box</strong> (header checkbox + Set margins button) to set margins without changing label size. <strong>Export / Import calibration</strong> is label setup JSON only (no canvas objects). <strong>Export all settings</strong> on the Printer tab bundles printer, Flex API, and calibration in one file. Pick a tool and <strong>click</strong> to place; drag to move. With an object selected, drag the <strong>blue corner squares</strong> (bottom-right = grow; top-left on shapes = shrink/move corner).</p>
             <p><strong>Labelary preview</strong> — <strong>Show margin outline</strong> draws a light red dotted rectangle over the preview image for the printable area (inside margins). It is display-only and does not change ZPL.</p>
             <p>Text: SE only — on-canvas size tracks ZPL <code>^AfN</code> (font <code>f</code> = 0, A–H, P–V) height/width (dots). Barcode: SE only (2D = magnification; QR pattern uses Labelary-compatible encoding when online).</p>
-            <p><strong>Rotate / flip</strong> — in Properties, use ↺/↻ for 90° steps and Flip H/V. Exported ZPL sets orientation <strong>N/R/I/B</strong> (0°/90°/180°/270° CW) on <code>^A</code> (text) and <code>^BQ</code>/<code>^BC</code>/… (barcodes) so Labelary and printers apply rotation. <code>^FW</code> wraps lines/boxes/images that have no per-field angle. Flip is preview-only for text and barcodes.</p>
-            <p>Snap, show grid, and grid spacing are <strong>under the canvas</strong>. <strong>Settings → Layout</strong> has the Flex header toggle and default merge tokens for new Text/Barcode tools.</p>
+            <p><strong>Rotate / flip</strong> — in Properties, use ↺/↻ for 90° steps and Flip H/V. Exported ZPL sets orientation <strong>N/R/I/B</strong> (0°/90°/180°/270° CW) on <code>^A</code> (text) and <code>^BQ</code>/<code>^BC</code>/… (barcodes). <code>^FW</code> wraps lines/boxes. <strong>Images</strong> encode rotation and flip directly in the <code>^GFA</code> bitmap so Labelary preview matches the canvas. Flip is preview-only for text and barcodes.</p>
+            <p>Snap, show grid, <strong>Grid from center</strong> (spacing through the printable center), <strong>Show center guides</strong> (light red crosshairs + snap targets), and grid spacing are <strong>under the canvas</strong>. <strong>Layers</strong>: the eye control hides an element on the canvas and in ZPL without removing it from the stack (select the row to edit or show again). <strong>Settings → Layout</strong> has the Flex header toggle and default merge tokens for new Text/Barcode tools.</p>
             <p><strong>Test data</strong> — turn on <strong>Test data</strong> next to <strong>Calibrate</strong> (bottom-right) to preview the label with sample strings instead of only live API merge values. Under <strong>Settings → Test data</strong>, use <strong>Long sample set</strong> or <strong>Short sample set</strong> to load presets, or type your own. While test mode is on, any non-empty test string overrides the API-loaded value for that merge token in the canvas and in substituted ZPL for preview and printer.</p>
+            <hr style="border:0;border-top:1px solid var(--border);margin:1rem 0" />
+            <p><strong>Resets</strong> (header only — same actions, no duplicate buttons here)</p>
+            <ul style="margin:0.35rem 0 0;padding-left:1.25rem;font-size:12px">
+              <li><strong>Reset canvas</strong> — designer ZPL (exits import), printable area off, workspace on, yellow overlay off, square label shell, selection cleared. Keeps label W×H, margins, objects, and Labelary margin/label-edge toggles.</li>
+              <li><strong>Reset defaults</strong> — factory 2×1 in, default margins, printable off, workspace on, yellow off, designer ZPL, preview margin outline and label-edge overlays off. Objects stay (clamped to fit).</li>
+            </ul>
+          </div>
+        </div>
+        <div id="connPanelCalibration" class="conn-panel" role="tabpanel">
+          <p class="hint print-panel-hint" style="margin-top:0;margin-bottom:0.35rem"><strong>Calibration</strong> — align the canvas and margins with a physical label. Click <strong>Calibrate</strong> (corner FAB) to show the yellow box and enable calibration ZPL ticks for printing.</p>
+          <ol class="cal-workflow-ol" style="margin-top:0">
+            <li><strong>Snap</strong> yellow to the green printable area (or match a Box / Labelary label edge), then drag on the canvas to match the real sticker trim.</li>
+            <li>If the nominal label size is right but print is shifted on the die-cut → use the <strong>pink Margin box</strong> (header) to set margins only (same <code>^PW</code>/<code>^LL</code>).</li>
+            <li>If the header W×H / <code>^PW</code>/<code>^LL</code> are wrong for the media → <strong>Set printable area from yellow box</strong> (changes rulers and ZPL size).</li>
+          </ol>
+          <p class="cal-section-hint" style="margin:0 0 0.65rem">Passive overlays only help you see alignment; <strong>Apply as margins</strong> / <strong>Set printable area</strong> / <strong>Set margins</strong> (pink box) change real settings.</p>
+          <div class="cal-panel">
+            <div class="cal-section">
+              <h3 class="cal-section-title">Labelary preview (bottom panel)</h3>
+              <p class="cal-section-hint">
+                <strong>Show margin outline</strong> — passive dotted rectangle: where the printable area would fall if the bitmap matches nominal <code>^PW</code>/<code>^LL</code>. Does not change ZPL.<br />
+                <strong>Show label edge</strong> — blue outline showing the full label boundary (actual label size at correct aspect ratio). Not interactive — just a visual reference.
+              </p>
+              <div class="cal-section-actions" style="flex-wrap:wrap">
+                <label class="chk" style="margin:0" title="Designer-only: dotted outline of the printable area (inside margins) over the preview image. Not sent to Labelary or the printer.">
+                  <input type="checkbox" id="previewMarginOverlayToggle" />
+                  Show margin outline
+                </label>
+                <label class="chk" style="margin:0" title="Blue outline showing the full label boundary at the correct aspect ratio on the preview. Visual reference only.">
+                  <input type="checkbox" id="previewEdgeOverlayToggle" />
+                  Show label outline
+                </label>
+                <label style="font-size:11px;color:var(--muted);display:inline-flex;align-items:center;gap:0.25rem;margin-left:0.5rem" title="Printer max print width in inches. The gray area behind the label in the preview represents the physical print area of the printer (e.g. 6 for a Zebra ZD621).">
+                  Printer width <input type="number" id="printerMaxWidthIn" min="0.5" max="24" step="0.25" value="6" style="width:3.5rem;font-size:11px;padding:0.1rem 0.2rem" /> in
+                </label>
+              </div>
+              <div id="previewCalActionsRow" class="preview-cal-actions-row" style="display:none;margin-top:0.45rem">
+                <span id="previewCalReadout" class="status" style="flex:1;min-width:0"></span>
+                <button type="button" class="btn secondary" id="btnPreviewCalApplyMargins" style="padding:0.2rem 0.45rem;font-size:11px" title="Set header margins from the preview edge insets (same as yellow-box apply)">
+                  Apply as margins
+                </button>
+                <button type="button" class="btn secondary" id="btnPreviewCalCopyYellow" style="padding:0.2rem 0.45rem;font-size:11px" title="Match yellow overlay to preview insets; opens this tab for next steps">
+                  Copy to yellow overlay
+                </button>
+              </div>
+            </div>
+            <div class="cal-section">
+              <h3 class="cal-section-title">Yellow overlay (canvas)</h3>
+              <p class="cal-section-hint">
+                Label dot coordinates from the top-left of the white label (0…W×H); with <strong>Canvas workspace</strong> on, the box can extend into the gray pad. Drag corners and edges on the canvas. Click <strong>Calibrate</strong> (corner FAB) to show it and enable ZPL ticks.
+              </p>
+              <div class="cal-section-actions" style="flex-wrap:wrap">
+                <label class="chk" style="margin:0" title="Shows the draggable yellow calibration rectangle on the canvas (also shown by the Calibrate button)."
+                  ><input type="checkbox" id="calShowOverlaySettings" /> Show yellow overlay</label
+                >
+                <label class="chk" style="margin:0" title="10-dot grid inside the yellow rectangle (canvas pixels; for alignment only)."
+                  ><input type="checkbox" id="calGuidShowGrid" /> Show calibration grid (10-dot)</label
+                >
+                <label class="chk" style="margin:0" title="Short tick marks every 10 label dots along the bottom and left outside the yellow frame."
+                  ><input type="checkbox" id="calGuidShowTicks" /> Show edge ticks (10-dot)</label
+                >
+                <label class="chk" style="margin:0" title="Maintain the current width-to-height ratio when dragging corners of the yellow box."
+                  ><input type="checkbox" id="calLockAspect" /> Lock aspect ratio</label
+                >
+              </div>
+              <div class="cal-section-actions" style="margin-top:0.45rem;flex-wrap:wrap">
+                <button
+                  type="button"
+                  class="btn secondary"
+                  id="calReset"
+                  style="padding:0.2rem 0.5rem;font-size:11px"
+                  title="Moves the yellow rectangle to match the current green printable area from header margins. Does not change margins or label size."
+                >
+                  Snap yellow box to green printable area
+                </button>
+                <button
+                  type="button"
+                  class="btn secondary"
+                  id="calMatchSelectedBox"
+                  style="padding:0.2rem 0.5rem;font-size:11px"
+                  title="Yellow overlay snaps to the same canvas outline as the blue selection (including into the gray workspace when workspace is on). Box tool only."
+                >
+                  Match selected box (Box tool)
+                </button>
+                <button
+                  type="button"
+                  class="btn secondary"
+                  id="calAddEdgeTestBox"
+                  style="padding:0.2rem 0.5rem;font-size:11px"
+                  title="Adds a thin outline Box over the full label (0,0 to W×H in label dots) for a print test. You can delete it later."
+                >
+                  Add edge-to-edge test box
+                </button>
+              </div>
+            </div>
+            <!-- margin-setting moved to pink margin box in header -->
+            <!-- calApply + calScaleContent hidden (JS listeners still reference them but element is inside display:none) -->
+            <div style="display:none">
+              <button type="button" id="calApply">hidden</button>
+              <input type="checkbox" id="calScaleContent" />
+            </div>
+            <div class="cal-section">
+              <h3 class="cal-section-title">Label size — rulers and ZPL</h3>
+              <p class="cal-section-hint">
+                Sets header W×H to the yellow box and remaps elements to the same physical dots. Turn the yellow overlay on first. Uses <code>^PW</code>/<code>^LL</code> dot counts from the new size.
+              </p>
+              <p id="calRebuildReadout" class="cal-rebuild-readout" aria-live="polite">—</p>
+              <div class="cal-radio-row" role="radiogroup" aria-label="Margins after rebuild">
+                <label
+                  ><input type="radio" name="calRebuildMarginMode" id="calRebuildMarginZero" value="zero" checked /> Margins → 0, then add inset margins in the header if needed</label
+                >
+                <label
+                  ><input type="radio" name="calRebuildMarginMode" id="calRebuildMarginKeep" value="keep" /> Keep current margin inches (shrunk if they do not fit the new size)</label
+                >
+              </div>
+              <button type="button" class="btn" id="calRebuildLabel" style="padding:0.35rem 0.65rem;font-size:12px;margin-top:0.35rem">Set printable area from yellow box</button>
+            </div>
+            <div class="cal-section">
+              <h3 class="cal-section-title">Optional: ZPL tick marks on print</h3>
+              <p class="cal-section-hint">
+                Adds short <code>^GB</code> tick segments along the bottom and left label edges (10-dot spacing, capped) for a physical calibration print. Affects generated ZPL only when this is on.
+              </p>
+              <label class="chk" style="margin:0;display:block;max-width:36rem" title="Small black ticks at 10-dot intervals on bottom and left; total segments capped for ZPL size."
+                ><input type="checkbox" id="calZplGuides" /> Add calibration ticks to exported / printed ZPL</label
+              >
+            </div>
+            <div class="cal-section">
+              <h3 class="cal-section-title">Save / share</h3>
+              <p class="cal-section-hint">
+                JSON includes label size, DPI, margins, workspace flags, and yellow box — <strong>not</strong> canvas objects. Import runs <strong>clamp to printable</strong> on all objects if the area shrinks.
+              </p>
+              <div class="cal-section-actions">
+                <button type="button" class="btn secondary" id="btnExportCalibration" style="padding:0.2rem 0.5rem;font-size:11px">Export calibration…</button>
+                <button type="button" class="btn secondary" id="btnImportCalibration" style="padding:0.2rem 0.5rem;font-size:11px">Import calibration…</button>
+              </div>
+              <input type="file" id="fileCalibrationSettings" accept=".json,application/json" style="display:none" />
+            </div>
+            <div class="cal-section">
+              <h3 class="cal-section-title" style="color:#db2777">Pink margin box</h3>
+              <p class="cal-section-hint">
+                A separate pink rectangle for adjusting <strong>margins only</strong> (ML/MT/MR/MB). Does not change label W×H. Show/hide and apply in the header, or use the controls below.
+              </p>
+              <div class="cal-section-actions">
+                <label class="chk" style="margin:0" title="Show/hide the pink margin box on the canvas.">
+                  <input type="checkbox" id="marginBoxShowSettings" /> Show margin box
+                </label>
+                <button type="button" class="btn secondary" id="btnMarginBoxSnapGreen" style="padding:0.2rem 0.5rem;font-size:11px"
+                  title="Snap the pink margin box to the current green printable area (current margins).">Snap to green printable</button>
+                <button type="button" class="btn secondary" id="btnMarginBoxApplySettings" style="padding:0.2rem 0.5rem;font-size:11px"
+                  title="Set header margins from the pink margin box.">Set margins from pink box</button>
+              </div>
+              <p id="marginBoxApplyMsg" class="hint" style="margin:0.35rem 0 0;font-size:11px;color:var(--muted)"></p>
+            </div>
+            <div class="cal-section">
+              <h3 class="cal-section-title">Resets</h3>
+              <p class="cal-section-hint" style="margin-bottom:0.35rem">
+                Use the header <strong>Reset canvas</strong> for view/import cleanup (keeps label size, margins, objects, and Labelary preview toggles). Use <strong>Reset defaults</strong> for factory label size and margins plus preview overlay toggles off. See <strong>Help</strong> for the full comparison.
+              </p>
+            </div>
+            <p id="calApplyMsg" class="hint" style="margin:0.45rem 0 0;font-size:11px;color:var(--muted)"></p>
           </div>
         </div>
         <div id="connPanelPrinter" class="conn-panel active" role="tabpanel">
@@ -1163,8 +1517,10 @@
 
   var LS_KEY = 'flexLabelDesigner_v1';
   var RULER = 30;
-  /** Extra pixels around the label on the canvas (view only; not ZPL). */
-  var LABEL_VIEW_PAD_PX = 36;
+  /** Default gray-pad thickness around the white label (designer only; doubled from original 36). */
+  var DEFAULT_CANVAS_WORKSPACE_PAD_PX = 72;
+  var MIN_CANVAS_WORKSPACE_PAD_PX = 24;
+  var MAX_CANVAS_WORKSPACE_PAD_PX = 240;
   /** .canvas-wrap padding 12px × 2 (must match CSS). */
   var CANVAS_WRAP_PADDING_PX = 24;
   var CANVAS_SLOT_MEASURE_SLACK_PX = 2;
@@ -1174,8 +1530,8 @@
   var MIN_LEFT_STRIP_PX = 400;
   var SPLIT_BOTTOM_MIN_PX = 160;
   var MIN_MAIN_TOP_PX = 240;
-  var labelOriginX = RULER + LABEL_VIEW_PAD_PX;
-  var labelOriginY = RULER + LABEL_VIEW_PAD_PX;
+  var labelOriginX = RULER + DEFAULT_CANVAS_WORKSPACE_PAD_PX;
+  var labelOriginY = RULER + DEFAULT_CANVAS_WORKSPACE_PAD_PX;
   var splitLayoutRaf = null;
 
   function dpmmFromDpi(dpi) {
@@ -1419,6 +1775,8 @@
     snapToObjects: true,
     snapGridEnabled: false,
     snapShowGrid: false,
+    snapGridFromCenter: false,
+    snapShowCenterLines: false,
     snapGridW: 20,
     snapGridH: 20,
     flexTextPlaceToken: '[element.name]',
@@ -1431,11 +1789,21 @@
     printerPort: 6101,
     relayUrl: '',
     printerConfigName: '',
-    allowOutsidePrintable: false,
-    allowOutsideLabel: false,
+    allowOutsidePrintable: true,
+    allowOutsideLabel: true,
     /** 0 = square label on canvas; >0 = corner radius in CSS pixels (visual only). */
     labelViewCornerRadiusPx: 0,
     printCalibration: { visible: false, lx: 0, ly: 0, lw: 100, lh: 100 },
+    /** Canvas yellow overlay: 10-dot grid inside the calibration rect. */
+    calibrationShowGrid: false,
+    /** Canvas yellow overlay: tick marks outside bottom/left edges. */
+    calibrationShowTicks: false,
+    /** Optional ^GB tick pattern in generated ZPL (calibration print). */
+    calibrationZplGuides: false,
+    /** Lock yellow calibration box aspect ratio during resize. */
+    calibrationLockAspect: false,
+    /** Pink margin box overlay (label-dot space). */
+    marginBox: { visible: false, lx: 0, ly: 0, lw: 0, lh: 0 },
     flexApiBase: '',
     flexApiPath: DEFAULT_FLEX_API_PATH,
     flexApiAuthHeader: 'X-Auth-Token',
@@ -1449,10 +1817,22 @@
     flexLastResponseText: '',
     settingsActiveTab: 'printer',
     settingsModalOpenerFabId: 'btnSettingsFab',
-    calibrationModalOpenerFabId: 'btnCalibrateFab',
     labelaryPreviewEnabled: true,
     /** Dotted margin outline on Labelary preview only (not in ZPL). */
-    previewMarginOverlay: false
+    previewMarginOverlay: false,
+    /** Clip Labelary preview to label aspect + optional rounded shell (Appearance; not ZPL). */
+    previewMatchLabelFrame: true,
+    /** Label outline overlay on Labelary preview — shows full label boundary in blue. */
+    previewEdgeOverlay: false,
+    /** Preview edge overlay insets from bitmap edges, dots (scratchpad until Apply). */
+    previewCalOffsetL: 0,
+    previewCalOffsetT: 0,
+    previewCalOffsetR: 0,
+    previewCalOffsetB: 0,
+    /** Gray workspace margin around the label in CSS px (designer only; not ZPL). */
+    canvasWorkspacePadPx: DEFAULT_CANVAS_WORKSPACE_PAD_PX,
+    /** Printer max print width in inches (for preview gray-zone context). */
+    printerMaxWidthIn: 6
   };
 
   var SNAP_TOL_DOTS = 8;
@@ -1474,6 +1854,8 @@
   var CAL_EDGE_HIT = 14;
   var MIN_CALIB_INNER = 40;
   var calDrag = null;
+  var marginBoxDrag = null;
+  var previewEdgeDrag = null;
 
   function labelDots() {
     return {
@@ -1500,9 +1882,15 @@
     };
   }
 
+  function effectiveCanvasWorkspacePadPx() {
+    var v = parseInt(state.canvasWorkspacePadPx, 10);
+    if (isNaN(v)) v = DEFAULT_CANVAS_WORKSPACE_PAD_PX;
+    return Math.max(MIN_CANVAS_WORKSPACE_PAD_PX, Math.min(MAX_CANVAS_WORKSPACE_PAD_PX, v));
+  }
+
   function syncCanvasSize() {
     var L = labelDots();
-    var pad = LABEL_VIEW_PAD_PX;
+    var pad = effectiveCanvasWorkspacePadPx();
     var wrap = canvas && canvas.closest ? canvas.closest('.canvas-wrap') : null;
     var innerW = 0;
     var innerH = 0;
@@ -1575,6 +1963,7 @@
     splitLayoutRaf = requestAnimationFrame(function () {
       splitLayoutRaf = null;
       syncCanvasSize();
+      clampPrintCalibrationRect();
       draw();
     });
   }
@@ -1605,7 +1994,7 @@
 
   /** Canvas gray pad around the label, in inner-coordinate dots (call after syncCanvasSize). */
   function workspacePadDots() {
-    return LABEL_VIEW_PAD_PX / state.pxPerDot;
+    return effectiveCanvasWorkspacePadPx() / state.pxPerDot;
   }
 
   /** Extra slack for placement only when content may use margin bands or gray pad. Printable-area-only ignores pad so objects stay inside green. */
@@ -1757,6 +2146,32 @@
     state.printCalibration.lh = inner.h;
   }
 
+  function syncMarginBoxFromMargins() {
+    var M = marginDots();
+    var inner = innerDots();
+    state.marginBox.lx = M.l;
+    state.marginBox.ly = M.t;
+    state.marginBox.lw = inner.w;
+    state.marginBox.lh = inner.h;
+  }
+
+  /** When canvas workspace is on, yellow overlay may extend into the gray pad (label-dot slack beyond 0…W/H). */
+  function printCalibrationWorkspacePadDots() {
+    if (!state.allowOutsideLabel) return 0;
+    var px = state.pxPerDot || 1;
+    return Math.max(8, Math.ceil(effectiveCanvasWorkspacePadPx() / px) + 4);
+  }
+
+  function getPrintCalibrationDragLimits(L) {
+    var pad = printCalibrationWorkspacePadDots();
+    return {
+      minLx: -pad,
+      minLy: -pad,
+      maxRx: L.w + pad,
+      maxBy: L.h + pad
+    };
+  }
+
   /** Label shell defaults (size, DPI, margins, calibration UI, in-margins). Keeps objects; clamps to fit. */
   function resetLabelToFactoryDefaults() {
     if (
@@ -1764,7 +2179,8 @@
         'Reset label to factory defaults?\n\n' +
           '• Size 2×1 in, 203 DPI\n' +
           '• Margins 0.05" on all sides\n' +
-          '• Printable area only: on; canvas workspace: off; yellow calibration box: hidden\n' +
+          '• Printable area only: off; canvas workspace: on; yellow/pink overlays: hidden\n' +
+          '• Canvas: designer ZPL (no import), square label shell, preview margin/edge overlays off\n' +
           '• Flex header: on\n\n' +
           'Objects on the label are kept and moved inward if they no longer fit.'
       )
@@ -1779,10 +2195,21 @@
     state.marginR = DEFAULT_MARGIN_IN;
     state.marginB = DEFAULT_MARGIN_IN;
     state.linkMargin = false;
-    state.allowOutsidePrintable = false;
-    state.allowOutsideLabel = false;
+    state.allowOutsidePrintable = true;
+    state.allowOutsideLabel = true;
     state.printCalibration.visible = false;
+    state.marginBox.visible = false;
     state.flexHeader = true;
+    state.importedZpl = null;
+    state.labelViewCornerRadiusPx = 0;
+    state.previewMarginOverlay = false;
+    state.previewEdgeOverlay = false;
+    state.previewCalOffsetL = state.previewCalOffsetT = state.previewCalOffsetR = state.previewCalOffsetB = 0;
+    state.calibrationShowGrid = false;
+    state.calibrationShowTicks = false;
+    state.calibrationZplGuides = false;
+    state.selectedId = null;
+    setTool('select');
     syncPrintCalibrationFromMargins();
     clampPrintCalibrationRect();
     state.objects.forEach(function (o) {
@@ -1792,13 +2219,53 @@
     var pr = document.getElementById('preset');
     if (pr) pr.value = '0';
     writeDimsToUi();
+    var taImp = document.getElementById('zplOut');
+    if (taImp) taImp.readOnly = true;
+    updateImportBanner();
     var msg = document.getElementById('calApplyMsg');
     if (msg) msg.textContent = '';
     refreshZpl();
+    updatePreviewMarginOverlay();
     renderProps();
     renderElementList();
     draw();
     tryPersist();
+    updateCalibrationRebuildReadout();
+  }
+
+  /**
+   * Restore canvas presentation: designer ZPL, full label placement + workspace on, no yellow overlay,
+   * square label shell on canvas, clear selection. Does not change W×H, margins, DPI, objects, or Labelary preview margin/edge toggles.
+   */
+  function resetDesignerCanvas() {
+    state.importedZpl = null;
+    state.allowOutsidePrintable = true;
+    state.allowOutsideLabel = true;
+    state.printCalibration.visible = false;
+    state.marginBox.visible = false;
+    state.calibrationZplGuides = false;
+    state.labelViewCornerRadiusPx = 0;
+    syncPrintCalibrationFromMargins();
+    clampPrintCalibrationRect();
+    state.selectedId = null;
+    setTool('select');
+    writeDimsToUi();
+    var ta = document.getElementById('zplOut');
+    if (ta) ta.readOnly = true;
+    updateImportBanner();
+    refreshZpl();
+    updatePreviewMarginOverlay();
+    var msg = document.getElementById('calApplyMsg');
+    if (msg) {
+      msg.textContent =
+        'Canvas reset: designer ZPL, full label + workspace on, yellow/pink overlays hidden, square label on canvas.';
+      msg.style.color = '';
+    }
+    renderProps();
+    renderElementList();
+    draw();
+    tryPersist();
+    updateCalibrationRebuildReadout();
   }
 
   function getCalibrationCanvasRect() {
@@ -1841,11 +2308,24 @@
 
   function clampPrintCalibrationRect() {
     var L = labelDots();
+    var lim = getPrintCalibrationDragLimits(L);
     var pc = state.printCalibration;
-    pc.lx = Math.max(0, Math.min(L.w - MIN_CALIB_INNER, Math.round(pc.lx)));
-    pc.ly = Math.max(0, Math.min(L.h - MIN_CALIB_INNER, Math.round(pc.ly)));
-    pc.lw = Math.max(MIN_CALIB_INNER, Math.min(L.w - pc.lx, Math.round(pc.lw)));
-    pc.lh = Math.max(MIN_CALIB_INNER, Math.min(L.h - pc.ly, Math.round(pc.lh)));
+    var lx = Math.round(pc.lx);
+    var ly = Math.round(pc.ly);
+    var lw = Math.max(MIN_CALIB_INNER, Math.round(pc.lw));
+    var lh = Math.max(MIN_CALIB_INNER, Math.round(pc.lh));
+    lx = Math.max(lim.minLx, Math.min(lim.maxRx - lw, lx));
+    ly = Math.max(lim.minLy, Math.min(lim.maxBy - lh, ly));
+    if (lw > lim.maxRx - lx) lw = lim.maxRx - lx;
+    if (lh > lim.maxBy - ly) lh = lim.maxBy - ly;
+    lw = Math.max(MIN_CALIB_INNER, lw);
+    lh = Math.max(MIN_CALIB_INNER, lh);
+    lx = Math.max(lim.minLx, Math.min(lim.maxRx - lw, lx));
+    ly = Math.max(lim.minLy, Math.min(lim.maxBy - lh, ly));
+    pc.lx = lx;
+    pc.ly = ly;
+    pc.lw = lw;
+    pc.lh = lh;
   }
 
   function scaleObjectForCalibration(o, s) {
@@ -1881,6 +2361,7 @@
     var ddx = Math.round((mx - calDrag.startMx) / px);
     var ddy = Math.round((my - calDrag.startMy) / px);
     var L = labelDots();
+    var lim = getPrintCalibrationDragLimits(L);
     var pc = state.printCalibration;
     var lx = calDrag.lx0;
     var ly = calDrag.ly0;
@@ -1890,57 +2371,73 @@
     if (k === 'move') {
       lx += ddx;
       ly += ddy;
-      lx = Math.max(0, Math.min(L.w - lw, lx));
-      ly = Math.max(0, Math.min(L.h - lh, ly));
+      lx = Math.max(lim.minLx, Math.min(lim.maxRx - lw, lx));
+      ly = Math.max(lim.minLy, Math.min(lim.maxBy - lh, ly));
     } else if (k === 'e') {
-      lw = Math.max(MIN_CALIB_INNER, Math.min(L.w - lx, lw + ddx));
+      lw = Math.max(MIN_CALIB_INNER, Math.min(lim.maxRx - lx, lw + ddx));
     } else if (k === 's') {
-      lh = Math.max(MIN_CALIB_INNER, Math.min(L.h - ly, lh + ddy));
+      lh = Math.max(MIN_CALIB_INNER, Math.min(lim.maxBy - ly, lh + ddy));
     } else if (k === 'w') {
       var nlx = lx + ddx;
       var nlw = lw - ddx;
-      if (nlw >= MIN_CALIB_INNER && nlx >= 0) {
+      if (nlw >= MIN_CALIB_INNER && nlx >= lim.minLx) {
         lx = nlx;
         lw = nlw;
       }
     } else if (k === 'n') {
       var nly = ly + ddy;
       var nlh = lh - ddy;
-      if (nlh >= MIN_CALIB_INNER && nly >= 0) {
+      if (nlh >= MIN_CALIB_INNER && nly >= lim.minLy) {
         ly = nly;
         lh = nlh;
       }
     } else if (k === 'se') {
-      lw = Math.max(MIN_CALIB_INNER, Math.min(L.w - lx, lw + ddx));
-      lh = Math.max(MIN_CALIB_INNER, Math.min(L.h - ly, lh + ddy));
+      lw = Math.max(MIN_CALIB_INNER, Math.min(lim.maxRx - lx, lw + ddx));
+      lh = Math.max(MIN_CALIB_INNER, Math.min(lim.maxBy - ly, lh + ddy));
     } else if (k === 'sw') {
       var nlx2 = lx + ddx;
       var nlw2 = lw - ddx;
-      if (nlw2 >= MIN_CALIB_INNER && nlx2 >= 0) {
+      if (nlw2 >= MIN_CALIB_INNER && nlx2 >= lim.minLx) {
         lx = nlx2;
         lw = nlw2;
       }
-      lh = Math.max(MIN_CALIB_INNER, Math.min(L.h - ly, lh + ddy));
+      lh = Math.max(MIN_CALIB_INNER, Math.min(lim.maxBy - ly, lh + ddy));
     } else if (k === 'ne') {
-      lw = Math.max(MIN_CALIB_INNER, Math.min(L.w - lx, lw + ddx));
+      lw = Math.max(MIN_CALIB_INNER, Math.min(lim.maxRx - lx, lw + ddx));
       var nly3 = ly + ddy;
       var nlh3 = lh - ddy;
-      if (nlh3 >= MIN_CALIB_INNER && nly3 >= 0) {
+      if (nlh3 >= MIN_CALIB_INNER && nly3 >= lim.minLy) {
         ly = nly3;
         lh = nlh3;
       }
     } else if (k === 'nw') {
       var nlx4 = lx + ddx;
       var nlw4 = lw - ddx;
-      if (nlw4 >= MIN_CALIB_INNER && nlx4 >= 0) {
+      if (nlw4 >= MIN_CALIB_INNER && nlx4 >= lim.minLx) {
         lx = nlx4;
         lw = nlw4;
       }
       var nly4 = ly + ddy;
       var nlh4 = lh - ddy;
-      if (nlh4 >= MIN_CALIB_INNER && nly4 >= 0) {
+      if (nlh4 >= MIN_CALIB_INNER && nly4 >= lim.minLy) {
         ly = nly4;
         lh = nlh4;
+      }
+    }
+    if (state.calibrationLockAspect && k !== 'move' && calDrag.lw0 > 0 && calDrag.lh0 > 0) {
+      var aspect = calDrag.lw0 / calDrag.lh0;
+      if (k === 'e' || k === 'w') {
+        lh = Math.max(MIN_CALIB_INNER, Math.round(lw / aspect));
+      } else if (k === 'n' || k === 's') {
+        lw = Math.max(MIN_CALIB_INNER, Math.round(lh * aspect));
+      } else {
+        var newH = Math.round(lw / aspect);
+        if (newH >= MIN_CALIB_INNER) {
+          if (k === 'nw' || k === 'ne') {
+            ly = ly + (lh - newH);
+          }
+          lh = newH;
+        }
       }
     }
     pc.lx = lx;
@@ -1996,8 +2493,8 @@
     var msg = document.getElementById('calApplyMsg');
     if (msg) {
       msg.textContent = doScale
-        ? 'Applied: margins updated and content scaled. Re-check 2D barcodes in preview.'
-        : 'Applied: margins updated; elements kept on the same physical label dots.';
+        ? 'Margins set from yellow box; content scaled. Re-check 2D barcodes in preview.'
+        : 'Margins set from yellow box; elements kept on the same physical label dots.';
     }
     tryPersist();
     refreshZpl();
@@ -2007,9 +2504,156 @@
     updatePreviewMarginOverlay();
   }
 
+  function applyMarginBoxAsMargins() {
+    var mb = state.marginBox;
+    if (!mb.visible) {
+      var msg = document.getElementById('marginBoxApplyMsg');
+      if (msg) msg.textContent = 'Turn on "Margin box" first, then adjust the pink box on the canvas.';
+      return;
+    }
+    var L = labelDots();
+    var M = marginDots();
+    var lx = Math.max(0, Math.min(L.w - MIN_CALIB_INNER, Math.round(mb.lx)));
+    var ly = Math.max(0, Math.min(L.h - MIN_CALIB_INNER, Math.round(mb.ly)));
+    var lw = Math.max(MIN_CALIB_INNER, Math.min(L.w - lx, Math.round(mb.lw)));
+    var lh = Math.max(MIN_CALIB_INNER, Math.min(L.h - ly, Math.round(mb.lh)));
+    var dpi = state.dpi;
+    var Ml0 = M.l;
+    var Mt0 = M.t;
+    state.marginL = Math.max(0, Math.round((lx / dpi) * 10000) / 10000);
+    state.marginT = Math.max(0, Math.round((ly / dpi) * 10000) / 10000);
+    state.marginR = Math.max(0, Math.round(((L.w - lx - lw) / dpi) * 10000) / 10000);
+    state.marginB = Math.max(0, Math.round(((L.h - ly - lh) / dpi) * 10000) / 10000);
+    state.objects.forEach(function (o) {
+      o.x += Ml0 - lx;
+      o.y += Mt0 - ly;
+      clampObjectIntoInner(o);
+      if (o.type === 'barcode') normalizeBarcodeObject(o);
+    });
+    syncPrintCalibrationFromMargins();
+    syncMarginBoxFromMargins();
+    setDomInputNumber('mL', state.marginL);
+    setDomInputNumber('mT', state.marginT);
+    setDomInputNumber('mR', state.marginR);
+    setDomInputNumber('mB', state.marginB);
+    var msg2 = document.getElementById('marginBoxApplyMsg');
+    if (msg2) msg2.textContent = 'Margins set from pink box; elements repositioned to match.';
+    tryPersist();
+    refreshZpl();
+    renderProps();
+    renderElementList();
+    draw();
+    updatePreviewMarginOverlay();
+  }
+
+  /** Shrink margin inches if left+right or top+bottom exceed label minus min inner (8 dots). */
+  function clampMarginsToFitMinInner() {
+    var L = labelDots();
+    var MIN_INNER = 8;
+    var maxHoriz = Math.max(0, L.w - MIN_INNER);
+    var maxVert = Math.max(0, L.h - MIN_INNER);
+    var dpi = state.dpi;
+    function round4(v) {
+      return Math.max(0, Math.round(v * 10000) / 10000);
+    }
+    var M = marginDots();
+    if (M.l + M.r > maxHoriz && M.l + M.r > 0) {
+      var r = maxHoriz / (M.l + M.r);
+      state.marginL = round4((M.l * r) / dpi);
+      state.marginR = round4((M.r * r) / dpi);
+    }
+    M = marginDots();
+    if (M.t + M.b > maxVert && M.t + M.b > 0) {
+      var r2 = maxVert / (M.t + M.b);
+      state.marginT = round4((M.t * r2) / dpi);
+      state.marginB = round4((M.b * r2) / dpi);
+    }
+  }
+
+  /** Live readout in Settings → Calibration for “Set printable area from yellow box” (dots + inches). */
+  function updateCalibrationRebuildReadout() {
+    var el = document.getElementById('calRebuildReadout');
+    if (!el) return;
+    var pc = state.printCalibration;
+    var dpi = state.dpi;
+    var lx = Math.round(pc.lx);
+    var ly = Math.round(pc.ly);
+    var lw = Math.round(pc.lw);
+    var lh = Math.round(pc.lh);
+    var wIn = Math.max(0.25, Math.min(24, Math.round((lw / dpi) * 10000) / 10000));
+    var hIn = Math.max(0.25, Math.min(24, Math.round((lh / dpi) * 10000) / 10000));
+    el.textContent =
+      'Yellow box → ' + wIn + '×' + hIn + ' in · ' + lw + '×' + lh + ' dots (at ' + dpi + ' DPI)';
+  }
+
+  /**
+   * Resize nominal label to yellow calibration box; remap objects to same physical dots.
+   * @param {boolean} keepMargins - if false, zero margins; if true, keep inch values then clamp.
+   */
+  function applyCalibrationBoxAsLabelSize(keepMargins) {
+    var pc = state.printCalibration;
+    var msg = document.getElementById('calApplyMsg');
+    if (!state.printCalibration.visible) {
+      if (msg) {
+        msg.textContent = 'Click “Calibrate” or check “Show yellow overlay” here first, then adjust the box on the canvas.';
+        msg.style.color = 'var(--danger)';
+      }
+      return;
+    }
+    var L0 = labelDots();
+    var M_old = marginDots();
+    var lx = Math.round(pc.lx);
+    var ly = Math.round(pc.ly);
+    var lw = Math.round(pc.lw);
+    var lh = Math.round(pc.lh);
+    lx = Math.max(0, Math.min(L0.w - MIN_CALIB_INNER, lx));
+    ly = Math.max(0, Math.min(L0.h - MIN_CALIB_INNER, ly));
+    lw = Math.max(MIN_CALIB_INNER, Math.min(L0.w - lx, lw));
+    lh = Math.max(MIN_CALIB_INNER, Math.min(L0.h - ly, lh));
+    var dpi = state.dpi;
+    var newWIn = Math.max(0.25, Math.min(24, Math.round((lw / dpi) * 10000) / 10000));
+    var newHIn = Math.max(0.25, Math.min(24, Math.round((lh / dpi) * 10000) / 10000));
+
+    state.labelWIn = newWIn;
+    state.labelHIn = newHIn;
+    if (!keepMargins) {
+      state.marginL = state.marginT = state.marginR = state.marginB = 0;
+    }
+    clampMarginsToFitMinInner();
+    var M_new = marginDots();
+    state.objects.forEach(function (o) {
+      o.x += M_old.l - lx - M_new.l;
+      o.y += M_old.t - ly - M_new.t;
+      clampObjectIntoInner(o);
+      if (o.type === 'barcode') normalizeBarcodeObject(o);
+    });
+    syncPrintCalibrationFromMargins();
+    writeDimsToUi();
+    var pr = document.getElementById('preset');
+    if (pr) pr.value = String(PRESETS.length - 1);
+    if (msg) {
+      msg.textContent = keepMargins
+        ? 'Label rebuilt from yellow box; margins kept (clamped if needed). Header W×H and ^PW/^LL updated.'
+        : 'Label rebuilt from yellow box; margins set to 0. Header W×H and ^PW/^LL updated.';
+      msg.style.color = '';
+    }
+    tryPersist();
+    refreshZpl();
+    renderProps();
+    renderElementList();
+    draw();
+    updatePreviewMarginOverlay();
+    updateCalibrationRebuildReadout();
+  }
+
+  function applyCalibrationBoxAsLabelSizeFromUi() {
+    var keep =
+      document.getElementById('calRebuildMarginKeep') && document.getElementById('calRebuildMarginKeep').checked;
+    applyCalibrationBoxAsLabelSize(!!keep);
+  }
+
   function matchPrintCalibrationToSelectedBox() {
     var msg = document.getElementById('calApplyMsg');
-    var calShow = document.getElementById('calShowOverlay');
     if (!state.selectedId) {
       if (msg) msg.textContent = 'Select a Box object on the canvas first.';
       return;
@@ -2021,35 +2665,318 @@
       if (msg) msg.textContent = 'Select a Box object on the canvas first.';
       return;
     }
-    var M = marginDots();
-    var b = objectBounds(o);
+    syncCanvasSize();
+    var r = getObjectCanvasBounds(o);
+    var px = state.pxPerDot;
     var pc = state.printCalibration;
-    pc.lx = Math.round(M.l + b.x);
-    pc.ly = Math.round(M.t + b.y);
-    pc.lw = Math.round(b.w);
-    pc.lh = Math.round(b.h);
+    pc.lx = Math.round((r.x - labelOriginX) / px);
+    pc.ly = Math.round((r.y - labelOriginY) / px);
+    pc.lw = Math.max(MIN_CALIB_INNER, Math.round(r.w / px));
+    pc.lh = Math.max(MIN_CALIB_INNER, Math.round(r.h / px));
     clampPrintCalibrationRect();
     pc.visible = true;
-    if (calShow) calShow.checked = true;
+    syncCalShowOverlayCheckboxes();
     if (msg) {
       msg.textContent =
-        'Yellow box matched the selected box. Fine-tune with handles if needed, then Apply to margins.';
+        'Yellow box matched the selected box. Fine-tune on canvas, then use “Set printable area from yellow box” to change label W×H.';
+      msg.style.color = '';
     }
     draw();
     tryPersist();
+    updateCalibrationRebuildReadout();
+  }
+
+  /** Full-label outline box for print calibration (inner coords at -M so box spans label 0..L in label dots). */
+  function addEdgeToEdgeCalibrationBox() {
+    var msg = document.getElementById('calApplyMsg');
+    var L = labelDots();
+    var M = marginDots();
+    if (L.w < MIN_CALIB_INNER || L.h < MIN_CALIB_INNER) {
+      if (msg) msg.textContent = 'Label size is too small for a test box.';
+      return;
+    }
+    var o = {
+      id: uid(),
+      type: 'box',
+      x: -M.l,
+      y: -M.t,
+      hidden: false,
+      boxW: L.w,
+      boxH: L.h,
+      boxThick: 1,
+      boxFill: 'outline'
+    };
+    normalizeObjectOrient(o);
+    clampObjectIntoInner(o);
+    state.objects.push(o);
+    state.selectedId = o.id;
+    setTool('select');
+    if (msg) {
+      msg.textContent =
+        'Edge-to-edge test box added. Print and compare to the physical sticker; use preview label edge or yellow overlay to correct.';
+      msg.style.color = '';
+    }
+    refreshZpl();
+    renderProps();
+    renderElementList();
+    draw();
+    schedulePreview(getZplForPreview());
+    tryPersist();
+  }
+
+  function clampPreviewCalOffsets(L) {
+    var maxLR = Math.max(0, L.w - MIN_CALIB_INNER);
+    var maxTB = Math.max(0, L.h - MIN_CALIB_INNER);
+    var ol = Math.max(0, state.previewCalOffsetL | 0);
+    var ot = Math.max(0, state.previewCalOffsetT | 0);
+    var or = Math.max(0, state.previewCalOffsetR | 0);
+    var ob = Math.max(0, state.previewCalOffsetB | 0);
+    if (ol + or > maxLR) {
+      var r = maxLR / (ol + or);
+      ol = Math.floor(ol * r);
+      or = maxLR - ol;
+    }
+    if (ot + ob > maxTB) {
+      var r2 = maxTB / (ot + ob);
+      ot = Math.floor(ot * r2);
+      ob = maxTB - ot;
+    }
+    state.previewCalOffsetL = ol;
+    state.previewCalOffsetT = ot;
+    state.previewCalOffsetR = or;
+    state.previewCalOffsetB = ob;
+  }
+
+  function updatePreviewCalActionsRow() {
+    var row = document.getElementById('previewCalActionsRow');
+    var span = document.getElementById('previewCalReadout');
+    var show =
+      !!state.previewEdgeOverlay &&
+      ((state.previewCalOffsetL | 0) > 0 ||
+        (state.previewCalOffsetT | 0) > 0 ||
+        (state.previewCalOffsetR | 0) > 0 ||
+        (state.previewCalOffsetB | 0) > 0);
+    if (row) row.style.display = show ? 'flex' : 'none';
+    if (span && show) {
+      var dpi = state.dpi;
+      var l = state.previewCalOffsetL | 0;
+      var t = state.previewCalOffsetT | 0;
+      var r = state.previewCalOffsetR | 0;
+      var b = state.previewCalOffsetB | 0;
+      function inchStr(d) {
+        return (Math.round((d / dpi) * 10000) / 10000).toFixed(4);
+      }
+      span.textContent =
+        'Insets L ' +
+        l +
+        ' dots (' +
+        inchStr(l) +
+        '") · T ' +
+        t +
+        ' (' +
+        inchStr(t) +
+        '") · R ' +
+        r +
+        ' (' +
+        inchStr(r) +
+        '") · B ' +
+        b +
+        ' (' +
+        inchStr(b) +
+        '")';
+    }
+  }
+
+  function hitTestPreviewEdgeOverlay(clientX, clientY, rect) {
+    var EDGE = 10;
+    if (!rect || rect.width < 8 || rect.height < 8) return null;
+    var x0 = rect.left;
+    var y0 = rect.top;
+    var x1 = rect.right;
+    var y1 = rect.bottom;
+    if (clientX < x0 || clientX > x1 || clientY < y0 || clientY > y1) return null;
+    var onN = clientY <= y0 + EDGE;
+    var onS = clientY >= y1 - EDGE;
+    var onW = clientX <= x0 + EDGE;
+    var onE = clientX >= x1 - EDGE;
+    if (onN && onW) return 'nw';
+    if (onN && onE) return 'ne';
+    if (onS && onW) return 'sw';
+    if (onS && onE) return 'se';
+    if (onN) return 'n';
+    if (onS) return 's';
+    if (onW) return 'w';
+    if (onE) return 'e';
+    return 'move';
+  }
+
+  function positionPreviewEdgeOverlay(img) {
+    var edgeEl = document.getElementById('previewEdgeOverlay');
+    if (!edgeEl || !img) return;
+    if (!state.previewEdgeOverlay || !state.labelaryPreviewEnabled) {
+      edgeEl.style.display = 'none';
+      edgeEl.classList.remove('preview-edge-overlay--interactive');
+      updatePreviewCalActionsRow();
+      return;
+    }
+    if (img.classList.contains('preview-img--idle') || !img.naturalWidth || !img.complete) {
+      edgeEl.style.display = 'none';
+      edgeEl.classList.remove('preview-edge-overlay--interactive');
+      updatePreviewCalActionsRow();
+      return;
+    }
+    var cr = getPreviewImgContentRect(img);
+    if (!cr) {
+      edgeEl.style.display = 'none';
+      edgeEl.classList.remove('preview-edge-overlay--interactive');
+      updatePreviewCalActionsRow();
+      return;
+    }
+    var imgBdr = parseInt(getComputedStyle(img).borderLeftWidth, 10) || 0;
+    edgeEl.style.display = 'block';
+    edgeEl.style.left = (img.offsetLeft + imgBdr + cr.ox) + 'px';
+    edgeEl.style.top = (img.offsetTop + imgBdr + cr.oy) + 'px';
+    edgeEl.style.width = cr.rw + 'px';
+    edgeEl.style.height = cr.rh + 'px';
+    edgeEl.classList.remove('preview-edge-overlay--interactive');
+    edgeEl.setAttribute('aria-hidden', 'false');
+    updatePreviewCalActionsRow();
+  }
+
+  function applyPreviewCalOffsetsAsMargins() {
+    var L = labelDots();
+    clampPreviewCalOffsets(L);
+    var ol = state.previewCalOffsetL | 0;
+    var ot = state.previewCalOffsetT | 0;
+    var or = state.previewCalOffsetR | 0;
+    var ob = state.previewCalOffsetB | 0;
+    if (ol + ot + or + ob <= 0) return;
+    var pc = state.printCalibration;
+    pc.lx = ol;
+    pc.ly = ot;
+    pc.lw = L.w - ol - or;
+    pc.lh = L.h - ot - ob;
+    clampPrintCalibrationRect();
+    applyPrintCalibration();
+    state.previewCalOffsetL = state.previewCalOffsetT = state.previewCalOffsetR = state.previewCalOffsetB = 0;
+    updatePreviewMarginOverlay();
+    tryPersist();
+  }
+
+  function syncCalShowOverlayCheckboxes() {
+    var v = !!state.printCalibration.visible;
+    var h = document.getElementById('calShowOverlay');
+    var s = document.getElementById('calShowOverlaySettings');
+    if (h) h.checked = v;
+    if (s) s.checked = v;
+  }
+
+  function syncMarginBoxShowCheckboxes() {
+    var v = !!state.marginBox.visible;
+    var h = document.getElementById('marginBoxShow');
+    var s = document.getElementById('marginBoxShowSettings');
+    if (h) h.checked = v;
+    if (s) s.checked = v;
+  }
+
+  function copyPreviewCalToYellowOverlay() {
+    var L = labelDots();
+    clampPreviewCalOffsets(L);
+    var ol = state.previewCalOffsetL | 0;
+    var ot = state.previewCalOffsetT | 0;
+    var or = state.previewCalOffsetR | 0;
+    var ob = state.previewCalOffsetB | 0;
+    if (ol + ot + or + ob <= 0) return;
+    var pc = state.printCalibration;
+    pc.lx = ol;
+    pc.ly = ot;
+    pc.lw = L.w - ol - or;
+    pc.lh = L.h - ot - ob;
+    clampPrintCalibrationRect();
+    pc.visible = true;
+    syncCalShowOverlayCheckboxes();
+    state.previewCalOffsetL = state.previewCalOffsetT = state.previewCalOffsetR = state.previewCalOffsetB = 0;
+    draw();
+    tryPersist();
+    updateCalibrationRebuildReadout();
+    updatePreviewMarginOverlay();
+    openSettingsModal('calibration');
+    var msg = document.getElementById('calApplyMsg');
+    if (msg) {
+      msg.textContent = 'Yellow overlay matched preview edge insets. Adjust on canvas if needed, then apply margins or rebuild.';
+      msg.style.color = '';
+    }
   }
 
   function drawPrintCalibrationOverlay() {
     if (!state.printCalibration.visible) return;
     var r = getCalibrationCanvasRect();
+    var px = state.pxPerDot || 1;
     ctx.save();
-    ctx.strokeStyle = 'rgba(234, 179, 8, 0.95)';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([8, 4]);
-    ctx.strokeRect(r.x + 0.5, r.y + 0.5, Math.max(0, r.w - 1), Math.max(0, r.h - 1));
     ctx.fillStyle = 'rgba(234, 179, 8, 0.07)';
     ctx.fillRect(r.x, r.y, r.w, r.h);
+
+    if (state.calibrationShowGrid && r.w > 6 && r.h > 6) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(r.x, r.y, r.w, r.h);
+      ctx.clip();
+      ctx.strokeStyle = 'rgba(234, 179, 8, 0.25)';
+      ctx.lineWidth = 1;
+      var gStep = 10 * px;
+      var gx = r.x + gStep;
+      while (gx < r.x + r.w - 0.5) {
+        ctx.beginPath();
+        ctx.moveTo(gx, r.y);
+        ctx.lineTo(gx, r.y + r.h);
+        ctx.stroke();
+        gx += gStep;
+      }
+      var gy = r.y + gStep;
+      while (gy < r.y + r.h - 0.5) {
+        ctx.beginPath();
+        ctx.moveTo(r.x, gy);
+        ctx.lineTo(r.x + r.w, gy);
+        ctx.stroke();
+        gy += gStep;
+      }
+      ctx.restore();
+    }
+
+    if (state.calibrationShowTicks && r.w > 4 && r.h > 4) {
+      ctx.strokeStyle = 'rgba(202, 138, 4, 0.92)';
+      ctx.lineWidth = 1;
+      var tickPx = Math.min(10, Math.max(4, Math.round(2 + px * 2)));
+      var tStep = 10 * px;
+      var yEdge = r.y + r.h;
+      for (var tx = 0; tx <= r.w + 0.5; tx += tStep) {
+        var cx = r.x + Math.min(tx, r.w);
+        ctx.beginPath();
+        ctx.moveTo(cx, yEdge);
+        ctx.lineTo(cx, yEdge + tickPx);
+        ctx.stroke();
+      }
+      var xEdge = r.x;
+      for (var ty = 0; ty <= r.h + 0.5; ty += tStep) {
+        var cy = r.y + Math.min(ty, r.h);
+        ctx.beginPath();
+        ctx.moveTo(xEdge, cy);
+        ctx.lineTo(xEdge - tickPx, cy);
+        ctx.stroke();
+      }
+    }
+
+    ctx.strokeStyle = 'rgba(234, 179, 8, 0.95)';
+    ctx.lineWidth = 4;
     ctx.setLineDash([]);
+    var inset = 2;
+    ctx.strokeRect(
+      r.x + inset,
+      r.y + inset,
+      Math.max(0, r.w - inset * 2),
+      Math.max(0, r.h - inset * 2)
+    );
+
     var hh = CAL_HANDLE;
     ctx.fillStyle = '#ca8a04';
     ctx.strokeStyle = '#422006';
@@ -2067,12 +2994,144 @@
     ctx.restore();
   }
 
-  /** Matches ZPL ^AfN fontH × fontW (dots) on canvas: height = fontH·px, width scaled to ~n·fontW·px. */
+  function getMarginBoxCanvasRect() {
+    var px = state.pxPerDot;
+    var mb = state.marginBox;
+    return {
+      x: labelOriginX + mb.lx * px,
+      y: labelOriginY + mb.ly * px,
+      w: mb.lw * px,
+      h: mb.lh * px
+    };
+  }
+
+  function hitTestMarginBox(mx, my) {
+    if (!state.marginBox.visible) return null;
+    var r = getMarginBoxCanvasRect();
+    var hh = CAL_HANDLE;
+    var r2 = (hh + 4) * (hh + 4);
+    function nearCorner(cx, cy) {
+      var dx = mx - cx;
+      var dy = my - cy;
+      return dx * dx + dy * dy <= r2;
+    }
+    if (nearCorner(r.x, r.y)) return 'nw';
+    if (nearCorner(r.x + r.w, r.y)) return 'ne';
+    if (nearCorner(r.x, r.y + r.h)) return 'sw';
+    if (nearCorner(r.x + r.w, r.y + r.h)) return 'se';
+    var h = CAL_EDGE_HIT;
+    var onN = mx >= r.x - h && mx <= r.x + r.w + h && my >= r.y - h && my <= r.y + h;
+    var onS = mx >= r.x - h && mx <= r.x + r.w + h && my >= r.y + r.h - h && my <= r.y + r.h + h;
+    var onW = mx >= r.x - h && mx <= r.x + h && my >= r.y - h && my <= r.y + r.h + h;
+    var onE = mx >= r.x + r.w - h && mx <= r.x + r.w + h && my >= r.y - h && my <= r.y + r.h + h;
+    if (onN) return 'n';
+    if (onS) return 's';
+    if (onW) return 'w';
+    if (onE) return 'e';
+    if (mx >= r.x && mx <= r.x + r.w && my >= r.y && my <= r.y + r.h) return 'move';
+    return null;
+  }
+
+  function clampMarginBoxRect() {
+    var L = labelDots();
+    var mb = state.marginBox;
+    mb.lx = Math.max(0, Math.min(L.w - MIN_CALIB_INNER, mb.lx));
+    mb.ly = Math.max(0, Math.min(L.h - MIN_CALIB_INNER, mb.ly));
+    mb.lw = Math.max(MIN_CALIB_INNER, Math.min(L.w - mb.lx, mb.lw));
+    mb.lh = Math.max(MIN_CALIB_INNER, Math.min(L.h - mb.ly, mb.lh));
+  }
+
+  function applyMarginBoxDrag(mx, my) {
+    if (!marginBoxDrag) return;
+    var px = state.pxPerDot;
+    var ddx = Math.round((mx - marginBoxDrag.startMx) / px);
+    var ddy = Math.round((my - marginBoxDrag.startMy) / px);
+    var L = labelDots();
+    var mb = state.marginBox;
+    var lx = marginBoxDrag.lx0;
+    var ly = marginBoxDrag.ly0;
+    var lw = marginBoxDrag.lw0;
+    var lh = marginBoxDrag.lh0;
+    var k = marginBoxDrag.kind;
+    if (k === 'move') {
+      lx += ddx;
+      ly += ddy;
+      lx = Math.max(0, Math.min(L.w - lw, lx));
+      ly = Math.max(0, Math.min(L.h - lh, ly));
+    } else if (k === 'e') {
+      lw = Math.max(MIN_CALIB_INNER, Math.min(L.w - lx, lw + ddx));
+    } else if (k === 's') {
+      lh = Math.max(MIN_CALIB_INNER, Math.min(L.h - ly, lh + ddy));
+    } else if (k === 'w') {
+      var nlx = lx + ddx;
+      var nlw = lw - ddx;
+      if (nlw >= MIN_CALIB_INNER && nlx >= 0) { lx = nlx; lw = nlw; }
+    } else if (k === 'n') {
+      var nly = ly + ddy;
+      var nlh = lh - ddy;
+      if (nlh >= MIN_CALIB_INNER && nly >= 0) { ly = nly; lh = nlh; }
+    } else if (k === 'se') {
+      lw = Math.max(MIN_CALIB_INNER, Math.min(L.w - lx, lw + ddx));
+      lh = Math.max(MIN_CALIB_INNER, Math.min(L.h - ly, lh + ddy));
+    } else if (k === 'sw') {
+      var nlx2 = lx + ddx; var nlw2 = lw - ddx;
+      if (nlw2 >= MIN_CALIB_INNER && nlx2 >= 0) { lx = nlx2; lw = nlw2; }
+      lh = Math.max(MIN_CALIB_INNER, Math.min(L.h - ly, lh + ddy));
+    } else if (k === 'ne') {
+      lw = Math.max(MIN_CALIB_INNER, Math.min(L.w - lx, lw + ddx));
+      var nly3 = ly + ddy; var nlh3 = lh - ddy;
+      if (nlh3 >= MIN_CALIB_INNER && nly3 >= 0) { ly = nly3; lh = nlh3; }
+    } else if (k === 'nw') {
+      var nlx4 = lx + ddx; var nlw4 = lw - ddx;
+      if (nlw4 >= MIN_CALIB_INNER && nlx4 >= 0) { lx = nlx4; lw = nlw4; }
+      var nly4 = ly + ddy; var nlh4 = lh - ddy;
+      if (nlh4 >= MIN_CALIB_INNER && nly4 >= 0) { ly = nly4; lh = nlh4; }
+    }
+    mb.lx = lx; mb.ly = ly; mb.lw = lw; mb.lh = lh;
+    clampMarginBoxRect();
+    draw();
+  }
+
+  function drawMarginBox() {
+    if (!state.marginBox.visible) return;
+    var r = getMarginBoxCanvasRect();
+    ctx.save();
+    ctx.fillStyle = 'rgba(236, 72, 153, 0.07)';
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+    ctx.strokeStyle = 'rgba(236, 72, 153, 0.85)';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([]);
+    var inset = 1.5;
+    ctx.strokeRect(
+      r.x + inset, r.y + inset,
+      Math.max(0, r.w - inset * 2), Math.max(0, r.h - inset * 2)
+    );
+    var hh = CAL_HANDLE;
+    ctx.fillStyle = '#db2777';
+    ctx.strokeStyle = '#831843';
+    var corners = [
+      [r.x, r.y], [r.x + r.w, r.y],
+      [r.x, r.y + r.h], [r.x + r.w, r.y + r.h]
+    ];
+    for (var i = 0; i < corners.length; i++) {
+      var p = corners[i];
+      ctx.fillRect(p[0] - hh, p[1] - hh, hh * 2, hh * 2);
+      ctx.strokeRect(p[0] - hh + 0.5, p[1] - hh + 0.5, hh * 2 - 1, hh * 2 - 1);
+    }
+    ctx.restore();
+  }
+
+  /**
+   * Matches ZPL ^AfN fontH × fontW (dots) on canvas: height = fontH·px, width scaled to ~n·fontW·px.
+   * Same box drives canvas draw, selection, and {@link textBackgroundDots} (^GB) so designer, generated ZPL, and Labelary match.
+   */
   function textBoxCanvas(o) {
     syncCanvasSize();
+    normalizeObjectOrient(o);
     clampTextObjectFonts(o);
     var px = state.pxPerDot;
     var inner = innerDots();
+    var Lb = labelDots();
     var fh = Math.max(8, o.fontH || 28);
     var fw = clampTextFontWidth(fh, o.fontW);
     o.fontW = fw;
@@ -2081,7 +3140,6 @@
     var padY = 2;
     var hPx = fh * px;
     var targetWPx = Math.max(fw * px, text.length * fw * px * 0.58);
-    var Lb = labelDots();
     var pd = workspacePadForClamping();
     var maxWdots = (state.allowOutsidePrintable ? Lb.w : inner.w) + 2 * pd;
     var maxHdots = (state.allowOutsidePrintable ? Lb.h : inner.h) + 2 * pd;
@@ -2110,7 +3168,32 @@
     };
   }
 
-  /** Integer dots for ^GB behind text; matches textBoxCanvas outer box. */
+  /** @returns {'left'|'center'|'right'} */
+  function normalizeTextHAlign(o) {
+    var a = String((o && o.textHAlign) || 'left').toLowerCase();
+    if (a === 'center' || a === 'centre') return 'center';
+    if (a === 'right' || a === 'end') return 'right';
+    return 'left';
+  }
+
+  /**
+   * Text box in inner dots: top-left (lx, ly), size (lw × lh), plus {@link textBoxCanvas} layout.
+   * o.x, o.y is the placement anchor: left edge, horizontal center, or right edge of the box (see textHAlign).
+   */
+  function textBoxBoundsInner(o) {
+    syncCanvasSize();
+    var px = state.pxPerDot;
+    var tb = textBoxCanvas(o);
+    var lw = Math.max(4, Math.ceil(tb.boxW / px));
+    var lh = Math.max(4, Math.ceil(tb.boxH / px));
+    var al = normalizeTextHAlign(o);
+    var lx = o.x | 0;
+    if (al === 'center') lx = Math.round(o.x - lw / 2);
+    else if (al === 'right') lx = Math.round(o.x - lw);
+    return { lx: lx, ly: o.y | 0, lw: lw, lh: lh, tb: tb };
+  }
+
+  /** Integer dots for ^GB behind text; same outer box as {@link textBoxCanvas} (designer + preview). */
   function textBackgroundDots(o) {
     syncCanvasSize();
     var tb = textBoxCanvas(o);
@@ -2607,13 +3690,8 @@
     syncCanvasSize();
     var px = state.pxPerDot;
     if (o.type === 'text') {
-      var tb = textBoxCanvas(o);
-      return {
-        lx: o.x,
-        ly: o.y,
-        lw: Math.max(4, Math.ceil(tb.boxW / px)),
-        lh: Math.max(4, Math.ceil(tb.boxH / px))
-      };
+      var b = textBoxBoundsInner(o);
+      return { lx: b.lx, ly: b.ly, lw: b.lw, lh: b.lh };
     }
     if (o.type === 'barcode') {
       var bt = computeBarcodeTotalDots(o);
@@ -2713,7 +3791,7 @@
 
   function snapTopLeftForObject(o, nx, ny) {
     syncCanvasSize();
-    if (!state.snapToObjects && !state.snapGridEnabled) {
+    if (!state.snapToObjects && !state.snapGridEnabled && !state.snapShowCenterLines) {
       return { x: Math.round(nx), y: Math.round(ny) };
     }
     var inner = innerDots();
@@ -2729,13 +3807,12 @@
       ? [{ x: -M.l - pd, y: -M.t - pd, w: L.w + 2 * pd, h: L.h + 2 * pd }]
       : [{ x: 0, y: 0, w: inner.w, h: inner.h }];
     state.objects.forEach(function (o2) {
-      if (!o2 || o2.id === o.id) return;
+      if (!o2 || o2.id === o.id || o2.hidden) return;
       var br = objectBounds(o2);
       rects.push({ x: br.x, y: br.y, w: br.w, h: br.h });
     });
 
     function bestDeltaX(val, width) {
-      if (!state.snapToObjects) return { d: 0, snapped: false };
       var bestD = 0;
       var bestAbs = Infinity;
       function trySnap(candidate) {
@@ -2745,41 +3822,56 @@
           bestD = d;
         }
       }
-      for (var i = 0; i < rects.length; i++) {
-        var R = rects[i];
-        var l = R.x;
-        var r = R.x + R.w;
-        var cx = R.x + R.w / 2;
-        trySnap(l);
-        trySnap(r);
-        trySnap(l - width);
-        trySnap(r - width);
-        trySnap(cx - width / 2);
+      if (state.snapToObjects) {
+        for (var i = 0; i < rects.length; i++) {
+          var R = rects[i];
+          var l = R.x;
+          var r = R.x + R.w;
+          var cx = R.x + R.w / 2;
+          trySnap(l);
+          trySnap(r);
+          trySnap(l - width);
+          trySnap(r - width);
+          trySnap(cx - width / 2);
+        }
+      }
+      if (state.snapShowCenterLines) {
+        var cxi = inner.w / 2;
+        trySnap(cxi);
+        trySnap(cxi - width);
+        trySnap(cxi - width / 2);
       }
       return { d: bestD, snapped: bestAbs <= tol };
     }
 
     function bestDeltaY(val, height) {
-      if (!state.snapToObjects) return { d: 0, snapped: false };
       var bestD = 0;
       var bestAbs = Infinity;
-      function trySnap(candidate) {
+      function trySnap2(candidate) {
         var d = candidate - val;
         if (Math.abs(d) <= tol && Math.abs(d) < bestAbs) {
           bestAbs = Math.abs(d);
           bestD = d;
         }
       }
-      for (var j = 0; j < rects.length; j++) {
-        var R2 = rects[j];
-        var t = R2.y;
-        var bot = R2.y + R2.h;
-        var cy = R2.y + R2.h / 2;
-        trySnap(t);
-        trySnap(bot);
-        trySnap(t - height);
-        trySnap(bot - height);
-        trySnap(cy - height / 2);
+      if (state.snapToObjects) {
+        for (var j = 0; j < rects.length; j++) {
+          var R2 = rects[j];
+          var t = R2.y;
+          var bot = R2.y + R2.h;
+          var cy = R2.y + R2.h / 2;
+          trySnap2(t);
+          trySnap2(bot);
+          trySnap2(t - height);
+          trySnap2(bot - height);
+          trySnap2(cy - height / 2);
+        }
+      }
+      if (state.snapShowCenterLines) {
+        var cyi = inner.h / 2;
+        trySnap2(cyi);
+        trySnap2(cyi - height);
+        trySnap2(cyi - height / 2);
       }
       return { d: bestD, snapped: bestAbs <= tol };
     }
@@ -2792,8 +3884,18 @@
     var gw = Math.max(2, state.snapGridW | 0);
     var gh = Math.max(2, state.snapGridH | 0);
     if (state.snapGridEnabled) {
-      if (!rx.snapped) x = Math.round(x / gw) * gw;
-      if (!ry.snapped) y = Math.round(y / gh) * gh;
+      var cgx = inner.w / 2;
+      var cgy = inner.h / 2;
+      if (!rx.snapped) {
+        x = state.snapGridFromCenter
+          ? cgx + Math.round((x - cgx) / gw) * gw
+          : Math.round(x / gw) * gw;
+      }
+      if (!ry.snapped) {
+        y = state.snapGridFromCenter
+          ? cgy + Math.round((y - cgy) / gh) * gh
+          : Math.round(y / gh) * gh;
+      }
     }
 
     return { x: Math.round(x), y: Math.round(y) };
@@ -2807,22 +3909,96 @@
     ctx.strokeStyle = 'rgba(99, 102, 241, 0.28)';
     ctx.lineWidth = 1;
     ctx.setLineDash([2, 5]);
-    for (var gx = 0; gx <= inner.w; gx += gw) {
-      var pa = innerToCanvas(gx, 0);
-      var pb = innerToCanvas(gx, inner.h);
-      ctx.beginPath();
-      ctx.moveTo(pa.x + 0.5, pa.y);
-      ctx.lineTo(pb.x + 0.5, pb.y);
-      ctx.stroke();
+    if (state.snapGridFromCenter) {
+      var cgx = inner.w / 2;
+      var cgy = inner.h / 2;
+      var k;
+      for (k = 0; ; k++) {
+        var vx = cgx + k * gw;
+        if (vx > inner.w) break;
+        if (vx >= 0) {
+          var pa = innerToCanvas(vx, 0);
+          var pb = innerToCanvas(vx, inner.h);
+          ctx.beginPath();
+          ctx.moveTo(pa.x + 0.5, pa.y);
+          ctx.lineTo(pb.x + 0.5, pb.y);
+          ctx.stroke();
+        }
+      }
+      for (k = -1; ; k--) {
+        var vx2 = cgx + k * gw;
+        if (vx2 < 0) break;
+        var pa2 = innerToCanvas(vx2, 0);
+        var pb2 = innerToCanvas(vx2, inner.h);
+        ctx.beginPath();
+        ctx.moveTo(pa2.x + 0.5, pa2.y);
+        ctx.lineTo(pb2.x + 0.5, pb2.y);
+        ctx.stroke();
+      }
+      for (k = 0; ; k++) {
+        var hy = cgy + k * gh;
+        if (hy > inner.h) break;
+        if (hy >= 0) {
+          var pc = innerToCanvas(0, hy);
+          var pd = innerToCanvas(inner.w, hy);
+          ctx.beginPath();
+          ctx.moveTo(pc.x, pc.y + 0.5);
+          ctx.lineTo(pd.x, pd.y + 0.5);
+          ctx.stroke();
+        }
+      }
+      for (k = -1; ; k--) {
+        var hy2 = cgy + k * gh;
+        if (hy2 < 0) break;
+        var pc2 = innerToCanvas(0, hy2);
+        var pd2 = innerToCanvas(inner.w, hy2);
+        ctx.beginPath();
+        ctx.moveTo(pc2.x, pc2.y + 0.5);
+        ctx.lineTo(pd2.x, pd2.y + 0.5);
+        ctx.stroke();
+      }
+    } else {
+      for (var gx = 0; gx <= inner.w; gx += gw) {
+        var paa = innerToCanvas(gx, 0);
+        var pbb = innerToCanvas(gx, inner.h);
+        ctx.beginPath();
+        ctx.moveTo(paa.x + 0.5, paa.y);
+        ctx.lineTo(pbb.x + 0.5, pbb.y);
+        ctx.stroke();
+      }
+      for (var gy = 0; gy <= inner.h; gy += gh) {
+        var pcc = innerToCanvas(0, gy);
+        var pdd = innerToCanvas(inner.w, gy);
+        ctx.beginPath();
+        ctx.moveTo(pcc.x, pcc.y + 0.5);
+        ctx.lineTo(pdd.x, pdd.y + 0.5);
+        ctx.stroke();
+      }
     }
-    for (var gy = 0; gy <= inner.h; gy += gh) {
-      var pc = innerToCanvas(0, gy);
-      var pd = innerToCanvas(inner.w, gy);
-      ctx.beginPath();
-      ctx.moveTo(pc.x, pc.y + 0.5);
-      ctx.lineTo(pd.x, pd.y + 0.5);
-      ctx.stroke();
-    }
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  function drawCenterGuideLines(inner) {
+    if (!state.snapShowCenterLines) return;
+    var cx = inner.w / 2;
+    var cy = inner.h / 2;
+    var p1 = innerToCanvas(cx, 0);
+    var p2 = innerToCanvas(cx, inner.h);
+    var p3 = innerToCanvas(0, cy);
+    var p4 = innerToCanvas(inner.w, cy);
+    ctx.save();
+    ctx.strokeStyle = 'rgba(248, 113, 113, 0.5)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(p1.x + 0.5, p1.y);
+    ctx.lineTo(p2.x + 0.5, p2.y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(p3.x, p3.y + 0.5);
+    ctx.lineTo(p4.x, p4.y + 0.5);
+    ctx.stroke();
     ctx.setLineDash([]);
     ctx.restore();
   }
@@ -2833,8 +4009,9 @@
     var p = innerToCanvas(o.x, o.y);
     var px = state.pxPerDot;
     if (o.type === 'text') {
-      var tb = textBoxCanvas(o);
-      return { x: p.x, y: p.y, w: tb.boxW, h: tb.boxH };
+      var b = textBoxBoundsInner(o);
+      var pt = innerToCanvas(b.lx, b.ly);
+      return { x: pt.x, y: pt.y, w: b.tb.boxW, h: b.tb.boxH };
     }
     if (o.type === 'barcode') {
       var bt = computeBarcodeTotalDots(o);
@@ -2895,7 +4072,7 @@
   function hitTestResizeHandle(mx, my) {
     if (!state.selectedId) return null;
     var o = state.objects.find(function (x) { return x.id === state.selectedId; });
-    if (!o) return null;
+    if (!o || o.hidden) return null;
     var bb = getObjectCanvasBounds(o);
     var r2 = HANDLE_HIT * HANDLE_HIT;
     var seX = bb.x + bb.w;
@@ -2919,6 +4096,7 @@
     } else if (o.type === 'image') {
       s.iw = o.iw || 80;
       s.ih = o.ih || 40;
+      s.aspectWH = getImageAspectRatioWH(o);
     } else if (o.type === 'box') {
       s.boxW = o.boxW || 80;
       s.boxH = o.boxH || 40;
@@ -2946,8 +4124,22 @@
       if (o.x - bt.pad.l + bt.w > maxX) o.x = Math.max(bt.pad.l, maxX - bt.w);
       if (o.y - bt.pad.t + bt.h > maxY) o.y = Math.max(bt.pad.t, maxY - bt.h);
     } else if (o.type === 'image') {
-      o.iw = Math.max(8, Math.min(o.iw || 80, maxX - o.x));
-      o.ih = Math.max(8, Math.min(o.ih || 40, maxY - o.y));
+      if (o.linkIwIh) {
+        var arL = getImageAspectRatioWH(o);
+        o.iw = Math.max(8, Math.min(o.iw || 80, maxX - o.x, 800));
+        o.ih = Math.max(8, Math.min(800, Math.round(o.iw / arL)));
+        if (o.ih > maxY - o.y) {
+          o.ih = Math.max(8, maxY - o.y);
+          o.iw = Math.max(8, Math.min(800, Math.round(o.ih * arL)));
+        }
+        if (o.iw > maxX - o.x) {
+          o.iw = Math.max(8, maxX - o.x);
+          o.ih = Math.max(8, Math.min(800, Math.round(o.iw / arL)));
+        }
+      } else {
+        o.iw = Math.max(8, Math.min(o.iw || 80, maxX - o.x));
+        o.ih = Math.max(8, Math.min(o.ih || 40, maxY - o.y));
+      }
     } else if (o.type === 'box') {
       o.boxW = Math.max(4, Math.min(o.boxW || 80, maxX - o.x));
       o.boxH = Math.max(4, Math.min(o.boxH || 40, maxY - o.y));
@@ -3033,8 +4225,19 @@
           o.barH = Math.max(20, Math.min(400, (s.barH || 60) + ddy));
         }
       } else if (o.type === 'image') {
-        o.iw = Math.max(8, s.iw + ddx);
-        o.ih = Math.max(8, s.ih + ddy);
+        if (o.linkIwIh) {
+          var arS = s.aspectWH != null ? s.aspectWH : getImageAspectRatioWH(o);
+          if (Math.abs(ddx) >= Math.abs(ddy)) {
+            o.iw = Math.max(8, Math.min(800, s.iw + ddx));
+            o.ih = Math.max(8, Math.min(800, Math.round(o.iw / arS)));
+          } else {
+            o.ih = Math.max(8, Math.min(800, s.ih + ddy));
+            o.iw = Math.max(8, Math.min(800, Math.round(o.ih * arS)));
+          }
+        } else {
+          o.iw = Math.max(8, s.iw + ddx);
+          o.ih = Math.max(8, s.ih + ddy);
+        }
         if (o._imgEl && o.imageDataUrl) rebuildImageGfa(o);
       } else if (o.type === 'box') {
         o.boxW = Math.max(4, s.boxW + ddx);
@@ -3061,8 +4264,19 @@
       } else if (o.type === 'image') {
         o.x = s.x + ddx;
         o.y = s.y + ddy;
-        o.iw = Math.max(8, s.iw - ddx);
-        o.ih = Math.max(8, s.ih - ddy);
+        if (o.linkIwIh) {
+          var arN = s.aspectWH != null ? s.aspectWH : getImageAspectRatioWH(o);
+          if (Math.abs(ddx) >= Math.abs(ddy)) {
+            o.iw = Math.max(8, Math.min(800, s.iw - ddx));
+            o.ih = Math.max(8, Math.min(800, Math.round(o.iw / arN)));
+          } else {
+            o.ih = Math.max(8, Math.min(800, s.ih - ddy));
+            o.iw = Math.max(8, Math.min(800, Math.round(o.ih * arN)));
+          }
+        } else {
+          o.iw = Math.max(8, s.iw - ddx);
+          o.ih = Math.max(8, s.ih - ddy);
+        }
         if (o._imgEl && o.imageDataUrl) rebuildImageGfa(o);
       } else if (o.type === 'box') {
         o.x = s.x + ddx;
@@ -3248,6 +4462,7 @@
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawRulersAndMargins(L, M, inner);
     drawSnapGrid(inner);
+    drawCenterGuideLines(inner);
 
     var lxClip = labelOriginX;
     var lyClip = labelOriginY;
@@ -3267,34 +4482,45 @@
     ctx.clip();
 
     state.objects.forEach(function (o) {
+      if (o.hidden) return;
       var p = innerToCanvas(o.x, o.y);
       var sel = o.id === state.selectedId;
       if (o.type === 'text') {
         normalizeObjectOrient(o);
         clampTextObjectFonts(o);
-        var tb = textBoxCanvas(o);
+        var bTxt = textBoxBoundsInner(o);
+        var tb = bTxt.tb;
+        var pTxt = innerToCanvas(bTxt.lx, bTxt.ly);
         var tBack =
           o.textBack === 'white' || o.textBack === 'invert' ? o.textBack : 'none';
+        var innerPx = tb.boxW - 2 * tb.padX;
+        var twPx = tb.naturalW * tb.scaleX;
+        var offPx = 0;
+        var haDraw = normalizeTextHAlign(o);
+        if (haDraw === 'center') offPx = Math.max(0, (innerPx - twPx) / 2);
+        else if (haDraw === 'right') offPx = Math.max(0, innerPx - twPx);
         ctx.save();
         canvasApplyOrient(ctx, o);
         ctx.save();
         if (tBack === 'invert') {
           ctx.fillStyle = '#111';
-          ctx.fillRect(p.x, p.y, tb.boxW, tb.boxH);
+          ctx.fillRect(pTxt.x, pTxt.y, tb.boxW, tb.boxH);
           ctx.strokeStyle = sel ? '#3b82f6' : '#94a3b8';
           ctx.lineWidth = sel ? 2 : 1;
-          ctx.strokeRect(p.x + 0.5, p.y + 0.5, tb.boxW - 1, tb.boxH - 1);
-        } else {
-          ctx.fillStyle = sel ? 'rgba(59,130,246,0.16)' : '#ffffff';
+          ctx.strokeRect(pTxt.x + 0.5, pTxt.y + 0.5, tb.boxW - 1, tb.boxH - 1);
+        } else if (tBack === 'white') {
+          /** Solid white pad even when selected; selection ring is the blue stroke (not a tinted fill). */
+          ctx.fillStyle = '#ffffff';
           ctx.strokeStyle = sel ? '#3b82f6' : '#cbd5e1';
           ctx.lineWidth = sel ? 2 : 1;
-          ctx.fillRect(p.x, p.y, tb.boxW, tb.boxH);
-          ctx.strokeRect(p.x + 0.5, p.y + 0.5, tb.boxW - 1, tb.boxH - 1);
+          ctx.fillRect(pTxt.x, pTxt.y, tb.boxW, tb.boxH);
+          ctx.strokeRect(pTxt.x + 0.5, pTxt.y + 0.5, tb.boxW - 1, tb.boxH - 1);
         }
+        /** tBack === 'none': no fill/stroke here — global selection rect + handles draw after the clip pass. */
         ctx.beginPath();
-        ctx.rect(p.x, p.y, tb.boxW, tb.boxH);
+        ctx.rect(pTxt.x, pTxt.y, tb.boxW, tb.boxH);
         ctx.clip();
-        ctx.translate(p.x + tb.padX, p.y + tb.baselineY);
+        ctx.translate(pTxt.x + tb.padX + offPx, pTxt.y + tb.baselineY);
         ctx.scale(tb.scaleX, 1);
         ctx.font = textCanvasFontSpec(o.zplFont, tb.hPx);
         ctx.textAlign = 'left';
@@ -3437,7 +4663,7 @@
     ctx.restore();
 
     var selDraw = state.objects.find(function (x) { return x.id === state.selectedId; });
-    if (selDraw) {
+    if (selDraw && !selDraw.hidden) {
       var bbH = getObjectCanvasBounds(selDraw);
       ctx.strokeStyle = '#3b82f6';
       ctx.lineWidth = 2;
@@ -3447,6 +4673,7 @@
     }
 
     drawPrintCalibrationOverlay();
+    drawMarginBox();
 
     var drEl = document.getElementById('dotsReadout');
     if (drEl) {
@@ -3470,6 +4697,14 @@
         inner.h +
         ' dots (inside margins)' +
         extraOut;
+    }
+    var settingsModalEl = document.getElementById('settingsModal');
+    if (
+      settingsModalEl &&
+      settingsModalEl.classList.contains('open') &&
+      state.settingsActiveTab === 'calibration'
+    ) {
+      updateCalibrationRebuildReadout();
     }
   }
 
@@ -3506,9 +4741,8 @@
     function oy(y) { return M.t + y; }
 
     state.objects.forEach(function (o) {
+      if (o.hidden) return;
       normalizeObjectOrient(o);
-      var x = ox(o.x);
-      var y = oy(o.y);
       var rq = o.rotQ;
       if (o.type === 'text') {
         zplEmitWithRotation(lines, rq, function () {
@@ -3517,21 +4751,34 @@
           var fw = o.fontW || Math.round(fh * 0.9);
           var zf = o.zplFont || '0';
           var aOri = zplOrientLetterFromRotQ(rq);
+          var bZ = textBoxBoundsInner(o);
+          var boxX = ox(bZ.lx);
+          var boxY = oy(bZ.ly);
           var tBack =
             o.textBack === 'white' || o.textBack === 'invert' ? o.textBack : 'none';
           if (tBack === 'white' || tBack === 'invert') {
             var tbg = textBackgroundDots(o);
-            var tSolid = Math.max(tbg.w, tbg.h);
+            /** ZPL solid ^GB: thickness = min(w,h) per ZPL II (not max); max caused full-height white smear on Labelary when width was much smaller than height. */
+            var tSolid = Math.max(1, Math.min(tbg.w, tbg.h));
             var gcol = tBack === 'invert' ? 'B' : 'W';
-            lines.push('^FO' + x + ',' + y + '^GB' + tbg.w + ',' + tbg.h + ',' + tSolid + ',' + gcol + '^FS');
+            lines.push('^FO' + boxX + ',' + boxY + '^GB' + tbg.w + ',' + tbg.h + ',' + tSolid + ',' + gcol + '^FS');
           }
+          var pxZ = state.pxPerDot;
+          var padDots = Math.max(0, Math.round(bZ.tb.padX / pxZ));
+          var innerDots = Math.max(1, Math.round((bZ.tb.boxW - 2 * bZ.tb.padX) / pxZ));
+          var twDots = Math.max(1, Math.round((bZ.tb.naturalW * bZ.tb.scaleX) / pxZ));
+          var haZ = normalizeTextHAlign(o);
+          var offDots = 0;
+          if (haZ === 'center') offDots = Math.max(0, Math.round((innerDots - twDots) / 2));
+          else if (haZ === 'right') offDots = Math.max(0, innerDots - twDots);
+          var ftX = boxX + padDots + offDots;
           var fr = tBack === 'invert' ? '^FR' : '';
           if (o.utf8) {
             lines.push(
               '^FT' +
-                x +
+                ftX +
                 ',' +
-                (y + fh) +
+                (boxY + fh) +
                 fr +
                 '^A' +
                 zf +
@@ -3547,9 +4794,9 @@
           } else {
             lines.push(
               '^FT' +
-                x +
+                ftX +
                 ',' +
-                (y + fh) +
+                (boxY + fh) +
                 fr +
                 '^A' +
                 zf +
@@ -3565,47 +4812,138 @@
           }
         });
       } else if (o.type === 'barcode') {
+        var x = ox(o.x);
+        var y = oy(o.y);
         lines.push.apply(lines, emitBarcodeZpl(o, x, y));
       } else if (o.type === 'image' && o.gfaHex && o.gfaH && o.gfaRowBytes) {
-        zplEmitWithRotation(lines, rq, function () {
-          var imgZ = tryGfaZ64Payload(o.gfaHex, o.gfaRowBytes, o.gfaTotal);
-          if (imgZ) {
-            lines.push('^FO' + x + ',' + y + '^GFA,' + imgZ.b + ',' + imgZ.c + ',' + imgZ.d + ',' + imgZ.field + '^FS');
-          } else {
-            lines.push('^FO' + x + ',' + y + '^GFA,' + o.gfaTotal + ',' + o.gfaTotal + ',' + o.gfaRowBytes + ',' + o.gfaHex + '^FS');
-          }
-        });
+        var imgBox = imageGfaPlacementInner(o);
+        var imgFx = ox(imgBox.x);
+        var imgFy = oy(imgBox.y);
+        var imgZ = tryGfaZ64Payload(o.gfaHex, o.gfaRowBytes, o.gfaTotal);
+        if (imgZ) {
+          lines.push('^FO' + imgFx + ',' + imgFy + '^GFA,' + imgZ.b + ',' + imgZ.c + ',' + imgZ.d + ',' + imgZ.field + '^FS');
+        } else {
+          lines.push(
+            '^FO' +
+              imgFx +
+              ',' +
+              imgFy +
+              '^GFA,' +
+              o.gfaTotal +
+              ',' +
+              o.gfaTotal +
+              ',' +
+              o.gfaRowBytes +
+              ',' +
+              o.gfaHex +
+              '^FS'
+          );
+        }
       } else if (o.type === 'line') {
         zplEmitWithRotation(lines, rq, function () {
+          var xl = ox(o.x);
+          var yl = oy(o.y);
           var ll = Math.max(1, o.lineLen | 0);
           var lt = Math.max(1, o.lineThick | 0);
           if (o.lineOrient === 'v') {
-            lines.push('^FO' + x + ',' + y + '^GB0,' + ll + ',' + lt + '^FS');
+            lines.push('^FO' + xl + ',' + yl + '^GB0,' + ll + ',' + lt + '^FS');
           } else {
-            lines.push('^FO' + x + ',' + y + '^GB' + ll + ',0,' + lt + '^FS');
+            lines.push('^FO' + xl + ',' + yl + '^GB' + ll + ',0,' + lt + '^FS');
           }
         });
       } else if (o.type === 'box') {
         zplEmitWithRotation(lines, rq, function () {
+          var xb = ox(o.x);
+          var yb = oy(o.y);
           var bw = Math.max(2, o.boxW | 0);
           var bh = Math.max(2, o.boxH | 0);
           var zFill =
             o.boxFill === 'black' || o.boxFill === 'white' ? o.boxFill : 'outline';
           if (zFill === 'black' || zFill === 'white') {
-            var tSolid2 = Math.max(bw, bh);
+            var tSolid2 = Math.max(1, Math.min(bw, bh));
             var col = zFill === 'white' ? 'W' : 'B';
-            lines.push('^FO' + x + ',' + y + '^GB' + bw + ',' + bh + ',' + tSolid2 + ',' + col + '^FS');
+            lines.push('^FO' + xb + ',' + yb + '^GB' + bw + ',' + bh + ',' + tSolid2 + ',' + col + '^FS');
           } else {
             var bt = Math.max(1, o.boxThick | 0);
-            lines.push('^FO' + x + ',' + y + '^GB' + bw + ',' + bh + ',' + bt + '^FS');
+            lines.push('^FO' + xb + ',' + yb + '^GB' + bw + ',' + bh + ',' + bt + '^FS');
           }
         });
       }
     });
 
+    appendCalibrationGuideZpl(lines);
     lines.push('^PQ1,0,1,Y');
     lines.push('^XZ');
     return lines.join('\n');
+  }
+
+  /** Optional bottom/left edge ticks for calibration test prints; segment count capped. */
+  function appendCalibrationGuideZpl(lines) {
+    if (!state.calibrationZplGuides) return;
+    var pc = state.printCalibration;
+    var L = labelDots();
+    var rawX = Math.round(pc.lx);
+    var rawY = Math.round(pc.ly);
+    var rawW = Math.round(pc.lw);
+    var rawH = Math.round(pc.lh);
+    var bx = Math.max(0, Math.min(L.w - 4, rawX));
+    var by = Math.max(0, Math.min(L.h - 4, rawY));
+    var bw = Math.max(4, Math.min(L.w - bx, rawW - (bx - rawX)));
+    var bh = Math.max(4, Math.min(L.h - by, rawH - (by - rawY)));
+    if (bw < 4 || bh < 4) return;
+    var thick = 2;
+    var maxSeg = 300;
+    var n = 0;
+
+    lines.push('^FO' + bx + ',' + by + '^GB' + bw + ',0,' + thick + ',B^FS');
+    var botY = by + bh - thick;
+    if (botY >= by && botY + thick <= L.h) {
+      lines.push('^FO' + bx + ',' + botY + '^GB' + bw + ',0,' + thick + ',B^FS');
+    }
+    lines.push('^FO' + bx + ',' + by + '^GB0,' + bh + ',' + thick + ',B^FS');
+    var rtX = bx + bw - thick;
+    if (rtX >= bx && rtX + thick <= L.w) {
+      lines.push('^FO' + rtX + ',' + by + '^GB0,' + bh + ',' + thick + ',B^FS');
+    }
+    n += 4;
+
+    var tl = 5;
+    if (state.calibrationShowTicks) {
+      for (var tx = 0; tx <= bw && n < maxSeg; tx += 10) {
+        var tickX = bx + tx;
+        var tickY = by + bh;
+        if (tickX >= 0 && tickX < L.w && tickY >= 0 && tickY + tl <= L.h) {
+          lines.push('^FO' + tickX + ',' + tickY + '^GB0,' + tl + ',' + thick + ',B^FS');
+        }
+        n++;
+      }
+      for (var ty = 0; ty <= bh && n < maxSeg; ty += 10) {
+        var tlx = bx - tl;
+        var tly = by + ty;
+        if (tlx >= 0 && tly >= 0 && tly < L.h) {
+          lines.push('^FO' + tlx + ',' + tly + '^GB' + tl + ',0,' + thick + ',B^FS');
+        }
+        n++;
+      }
+    }
+
+    if (state.calibrationShowGrid) {
+      var gt = 1;
+      for (var gx = 10; gx < bw && n < maxSeg; gx += 10) {
+        var gxPos = bx + gx;
+        if (gxPos >= 0 && gxPos < L.w) {
+          lines.push('^FO' + gxPos + ',' + by + '^GB0,' + bh + ',' + gt + ',B^FS');
+        }
+        n++;
+      }
+      for (var gy = 10; gy < bh && n < maxSeg; gy += 10) {
+        var gyPos = by + gy;
+        if (gyPos >= 0 && gyPos < L.h) {
+          lines.push('^FO' + bx + ',' + gyPos + '^GB' + bw + ',0,' + gt + ',B^FS');
+        }
+        n++;
+      }
+    }
   }
 
   function escapeFd(s) {
@@ -3871,7 +5209,10 @@
     cctx.fillStyle = '#fff';
     cctx.fillRect(0, 0, wDots, hDots);
     cctx.drawImage(img, 0, 0, wDots, hDots);
-    var id = cctx.getImageData(0, 0, wDots, hDots);
+    return imageDataToGFA(cctx.getImageData(0, 0, wDots, hDots), wDots, hDots, threshold);
+  }
+
+  function imageDataToGFA(id, wDots, hDots, threshold) {
     var rowBytes = Math.ceil(wDots / 8);
     var hex = [];
     for (var row = 0; row < hDots; row++) {
@@ -3894,7 +5235,47 @@
       }
     }
     var total = rowBytes * hDots;
-    return { hex: hex.join(''), rowBytes: rowBytes, h: hDots, total: total };
+    return { hex: hex.join(''), rowBytes: rowBytes, h: hDots, total: total, w: wDots };
+  }
+
+  /** Inner-label ^FO position and size (dots) for a baked-orientation ^GFA (matches objectBounds). */
+  function imageGfaPlacementInner(o) {
+    normalizeObjectOrient(o);
+    var L = localBoundsUnrotatedInner(o);
+    return aabbFromLocalTransform(L.lx, L.ly, L.lw, L.lh, o.rotQ, o.flipH, o.flipV);
+  }
+
+  /**
+   * 1-bit ^GFA with rotation/flip baked into pixels (same transform as designer canvas).
+   * Labelary often ignores ^FW for ^GFA, so we do not rely on ^FW for images.
+   */
+  function rasterToGFAWithOrient(img, o) {
+    normalizeObjectOrient(o);
+    var th = o.threshold != null ? o.threshold : 140;
+    var L = localBoundsUnrotatedInner(o);
+    var lx = L.lx;
+    var ly = L.ly;
+    var lw = L.lw;
+    var lh = L.lh;
+    var box = aabbFromLocalTransform(lx, ly, lw, lh, o.rotQ, o.flipH, o.flipV);
+    var cw = Math.max(1, box.w | 0);
+    var ch = Math.max(1, box.h | 0);
+    var c = document.createElement('canvas');
+    c.width = cw;
+    c.height = ch;
+    var cctx = c.getContext('2d');
+    cctx.fillStyle = '#fff';
+    cctx.fillRect(0, 0, cw, ch);
+    cctx.translate(-box.x, -box.y);
+    var cx = lx + lw / 2;
+    var cy = ly + lh / 2;
+    cctx.translate(cx, cy);
+    if (o.flipH) cctx.scale(-1, 1);
+    if (o.flipV) cctx.scale(1, -1);
+    cctx.rotate((o.rotQ & 3) * (Math.PI / 2));
+    cctx.translate(-cx, -cy);
+    cctx.drawImage(img, lx, ly, lw, lh);
+    return imageDataToGFA(cctx.getImageData(0, 0, cw, ch), cw, ch, th);
   }
 
   /** 1-bit GFA from an RGBA canvas (e.g. merged QR + logo). Transparent → white (no ink). */
@@ -4137,6 +5518,8 @@
       snapToObjects: state.snapToObjects,
       snapGridEnabled: state.snapGridEnabled,
       snapShowGrid: state.snapShowGrid,
+      snapGridFromCenter: !!state.snapGridFromCenter,
+      snapShowCenterLines: !!state.snapShowCenterLines,
       snapGridW: state.snapGridW,
       snapGridH: state.snapGridH,
       flexTextPlaceToken: state.flexTextPlaceToken,
@@ -4171,9 +5554,28 @@
         lw: state.printCalibration.lw | 0,
         lh: state.printCalibration.lh | 0
       },
+      marginBox: {
+        visible: !!state.marginBox.visible,
+        lx: state.marginBox.lx | 0,
+        ly: state.marginBox.ly | 0,
+        lw: state.marginBox.lw | 0,
+        lh: state.marginBox.lh | 0
+      },
       labelaryPreviewEnabled: state.labelaryPreviewEnabled !== false,
       previewMarginOverlay: !!state.previewMarginOverlay,
+      previewMatchLabelFrame: !!state.previewMatchLabelFrame,
+      previewEdgeOverlay: !!state.previewEdgeOverlay,
+      previewCalOffsetL: state.previewCalOffsetL | 0,
+      previewCalOffsetT: state.previewCalOffsetT | 0,
+      previewCalOffsetR: state.previewCalOffsetR | 0,
+      previewCalOffsetB: state.previewCalOffsetB | 0,
+      calibrationShowGrid: !!state.calibrationShowGrid,
+      calibrationShowTicks: !!state.calibrationShowTicks,
+      calibrationZplGuides: !!state.calibrationZplGuides,
+      calibrationLockAspect: !!state.calibrationLockAspect,
+      printerMaxWidthIn: state.printerMaxWidthIn || 6,
       labelViewCornerRadiusPx: Math.max(0, Math.min(48, state.labelViewCornerRadiusPx | 0)),
+      canvasWorkspacePadPx: effectiveCanvasWorkspacePadPx(),
       objects: state.objects.map(function (o) {
         var c = Object.assign({}, o);
         delete c._imgEl;
@@ -4215,6 +5617,8 @@
     state.snapToObjects = s.snapToObjects !== false;
     state.snapGridEnabled = !!s.snapGridEnabled;
     state.snapShowGrid = !!s.snapShowGrid;
+    state.snapGridFromCenter = !!s.snapGridFromCenter;
+    state.snapShowCenterLines = !!s.snapShowCenterLines;
     state.snapGridW = s.snapGridW != null ? Math.max(2, s.snapGridW | 0) : 20;
     state.snapGridH = s.snapGridH != null ? Math.max(2, s.snapGridH | 0) : 20;
     state.flexTextPlaceToken =
@@ -4268,6 +5672,17 @@
     state.useTestDataMode = !!s.useTestDataMode;
     state.labelaryPreviewEnabled = s.labelaryPreviewEnabled !== false;
     state.previewMarginOverlay = !!s.previewMarginOverlay;
+    state.previewMatchLabelFrame = !!s.previewMatchLabelFrame;
+    state.previewEdgeOverlay = !!s.previewEdgeOverlay;
+    state.previewCalOffsetL = s.previewCalOffsetL != null ? Math.max(0, s.previewCalOffsetL | 0) : 0;
+    state.previewCalOffsetT = s.previewCalOffsetT != null ? Math.max(0, s.previewCalOffsetT | 0) : 0;
+    state.previewCalOffsetR = s.previewCalOffsetR != null ? Math.max(0, s.previewCalOffsetR | 0) : 0;
+    state.previewCalOffsetB = s.previewCalOffsetB != null ? Math.max(0, s.previewCalOffsetB | 0) : 0;
+    state.calibrationShowGrid = !!s.calibrationShowGrid;
+    state.calibrationShowTicks = !!s.calibrationShowTicks;
+    state.calibrationZplGuides = !!s.calibrationZplGuides;
+    state.calibrationLockAspect = !!s.calibrationLockAspect;
+    state.printerMaxWidthIn = s.printerMaxWidthIn != null ? Math.max(0.5, Math.min(24, Number(s.printerMaxWidthIn) || 6)) : 6;
     state.flexUseMergedForPreviewPrint = s.flexUseMergedForPreviewPrint !== false;
     state.flexLastResponseText = s.flexLastResponseText != null ? String(s.flexLastResponseText) : '';
     var legacyConnTab = s.connectionsActiveTab;
@@ -4279,7 +5694,8 @@
       tabPick === 'about' ||
       tabPick === 'appearance' ||
       tabPick === 'help' ||
-      tabPick === 'layout'
+      tabPick === 'layout' ||
+      tabPick === 'calibration'
         ? tabPick
         : 'printer';
     state.allowOutsidePrintable = !!s.allowOutsidePrintable;
@@ -4288,6 +5704,14 @@
       s.labelViewCornerRadiusPx != null
         ? Math.max(0, Math.min(48, parseInt(s.labelViewCornerRadiusPx, 10) || 0))
         : 0;
+    if (s.canvasWorkspacePadPx != null) {
+      var cwp = parseInt(s.canvasWorkspacePadPx, 10);
+      state.canvasWorkspacePadPx = isNaN(cwp)
+        ? DEFAULT_CANVAS_WORKSPACE_PAD_PX
+        : Math.max(MIN_CANVAS_WORKSPACE_PAD_PX, Math.min(MAX_CANVAS_WORKSPACE_PAD_PX, cwp));
+    } else {
+      state.canvasWorkspacePadPx = DEFAULT_CANVAS_WORKSPACE_PAD_PX;
+    }
     var pcIn = s.printCalibration;
     if (
       pcIn &&
@@ -4304,12 +5728,29 @@
     } else {
       syncPrintCalibrationFromMargins();
     }
+    var mbIn = s.marginBox;
+    if (
+      mbIn &&
+      typeof mbIn === 'object' &&
+      (mbIn.lw | 0) >= MIN_CALIB_INNER &&
+      (mbIn.lh | 0) >= MIN_CALIB_INNER
+    ) {
+      state.marginBox.visible = !!mbIn.visible;
+      state.marginBox.lx = mbIn.lx | 0;
+      state.marginBox.ly = mbIn.ly | 0;
+      state.marginBox.lw = mbIn.lw | 0;
+      state.marginBox.lh = mbIn.lh | 0;
+    } else {
+      state.marginBox.visible = false;
+      syncMarginBoxFromMargins();
+    }
     state.importedZpl = null;
     if (s.importedZpl != null && String(s.importedZpl).length) {
       state.importedZpl = String(s.importedZpl);
     }
     layerUndoStack.length = 0;
     state.objects = (s.objects || []).map(function (o) {
+      o.hidden = o.hidden === true;
       normalizeObjectOrient(o);
       if (o.type === 'barcode') normalizeBarcodeObject(o);
       if (o.type === 'text') clampTextObjectFonts(o);
@@ -4430,8 +5871,16 @@
     if (paoUi) paoUi.checked = !state.allowOutsidePrintable;
     var aolUi = document.getElementById('allowOutsideLabel');
     if (aolUi) aolUi.checked = !!state.allowOutsideLabel;
-    var cshow = document.getElementById('calShowOverlay');
-    if (cshow) cshow.checked = !!state.printCalibration.visible;
+    syncCalShowOverlayCheckboxes();
+    syncMarginBoxShowCheckboxes();
+    var cgg = document.getElementById('calGuidShowGrid');
+    if (cgg) cgg.checked = !!state.calibrationShowGrid;
+    var cgt = document.getElementById('calGuidShowTicks');
+    if (cgt) cgt.checked = !!state.calibrationShowTicks;
+    var czpl = document.getElementById('calZplGuides');
+    if (czpl) czpl.checked = !!state.calibrationZplGuides;
+    var cla = document.getElementById('calLockAspect');
+    if (cla) cla.checked = !!state.calibrationLockAspect;
     var so = document.getElementById('snapObjects');
     var sg = document.getElementById('snapGrid');
     var sshow = document.getElementById('snapShowGrid');
@@ -4440,6 +5889,10 @@
     if (so) so.checked = state.snapToObjects !== false;
     if (sg) sg.checked = !!state.snapGridEnabled;
     if (sshow) sshow.checked = !!state.snapShowGrid;
+    var sgfc = document.getElementById('snapGridFromCenter');
+    if (sgfc) sgfc.checked = !!state.snapGridFromCenter;
+    var sscl = document.getElementById('snapShowCenterLines');
+    if (sscl) sscl.checked = !!state.snapShowCenterLines;
     if (gw) gw.value = String(state.snapGridW || 20);
     if (gh) gh.value = String(state.snapGridH || 20);
     var tdm = document.getElementById('useTestDataMode');
@@ -4448,11 +5901,19 @@
     if (ple) ple.checked = state.labelaryPreviewEnabled !== false;
     var pmg = document.getElementById('previewMarginOverlayToggle');
     if (pmg) pmg.checked = !!state.previewMarginOverlay;
+    var pmf = document.getElementById('previewMatchLabelFrameChk');
+    if (pmf) pmf.checked = !!state.previewMatchLabelFrame;
+    var ped = document.getElementById('previewEdgeOverlayToggle');
+    if (ped) ped.checked = !!state.previewEdgeOverlay;
+    var pmwi = document.getElementById('printerMaxWidthIn');
+    if (pmwi) pmwi.value = state.printerMaxWidthIn || 6;
     var lcr = effectiveLabelViewCornerRadiusPx();
     var lcrInp = document.getElementById('labelCornerRadiusPx');
     if (lcrInp) lcrInp.value = String(lcr);
     var lcrChk = document.getElementById('labelRoundedCorners');
     if (lcrChk) lcrChk.checked = lcr > 0;
+    var cwpInp = document.getElementById('canvasWorkspacePadPx');
+    if (cwpInp) cwpInp.value = String(effectiveCanvasWorkspacePadPx());
     refreshFlexPlaceSelects();
     refreshFlexTestDataUi();
     writePrintSettingsToUi();
@@ -4509,7 +5970,7 @@
   }
 
   function setSettingsTab(tab) {
-    var ok = { appearance: 1, layout: 1, help: 1, printer: 1, flex: 1, scan: 1, testdata: 1, about: 1 };
+    var ok = { appearance: 1, layout: 1, help: 1, calibration: 1, printer: 1, flex: 1, scan: 1, testdata: 1, about: 1 };
     if (!ok[tab]) tab = 'printer';
     state.settingsActiveTab = tab;
     document.querySelectorAll('.conn-tab').forEach(function (btn) {
@@ -4521,6 +5982,7 @@
     var pap = document.getElementById('connPanelAppearance');
     var play = document.getElementById('connPanelLayout');
     var ph = document.getElementById('connPanelHelp');
+    var pcal = document.getElementById('connPanelCalibration');
     var pp = document.getElementById('connPanelPrinter');
     var pf = document.getElementById('connPanelFlex');
     var ps = document.getElementById('connPanelScan');
@@ -4529,11 +5991,13 @@
     if (pap) pap.classList.toggle('active', tab === 'appearance');
     if (play) play.classList.toggle('active', tab === 'layout');
     if (ph) ph.classList.toggle('active', tab === 'help');
+    if (pcal) pcal.classList.toggle('active', tab === 'calibration');
     if (pp) pp.classList.toggle('active', tab === 'printer');
     if (pf) pf.classList.toggle('active', tab === 'flex');
     if (ps) ps.classList.toggle('active', tab === 'scan');
     if (pt) pt.classList.toggle('active', tab === 'testdata');
     if (pa) pa.classList.toggle('active', tab === 'about');
+    if (tab === 'calibration') updateCalibrationRebuildReadout();
   }
 
   function focusSettingsFirstField(tab) {
@@ -4550,6 +6014,13 @@
     } else if (tab === 'help') {
       var hb = document.getElementById('connPanelHelp');
       if (hb) hb.focus();
+    } else if (tab === 'calibration') {
+      var cr = document.getElementById('calReset');
+      if (cr) cr.focus();
+      else {
+        var cs = document.getElementById('calShowOverlaySettings');
+        if (cs) cs.focus();
+      }
     } else if (tab === 'flex') {
       var fe = document.getElementById('flexApiBase');
       if (fe) fe.focus();
@@ -4602,26 +6073,26 @@
   }
 
   function openCalibrationModal(openerFabId) {
-    var modal = document.getElementById('calibrationModal');
-    var card = modal ? modal.querySelector('.print-modal-card') : null;
-    if (!modal) return;
-    if (openerFabId) state.calibrationModalOpenerFabId = openerFabId;
-    modal.classList.add('open');
-    modal.setAttribute('aria-hidden', 'false');
-    var c = document.getElementById('calShowOverlay');
-    if (c) c.focus();
-    else if (card) card.focus();
-  }
-
-  function closeCalibrationModal() {
-    var modal = document.getElementById('calibrationModal');
-    if (!modal) return;
+    var wasVisible = !!state.printCalibration.visible;
+    if (!wasVisible) {
+      syncPrintCalibrationFromMargins();
+      clampPrintCalibrationRect();
+    }
+    var on = !wasVisible;
+    state.printCalibration.visible = on;
+    state.calibrationZplGuides = on;
+    state.calibrationShowGrid = on;
+    state.calibrationShowTicks = on;
+    var czplEl = document.getElementById('calZplGuides');
+    if (czplEl) czplEl.checked = on;
+    var cgEl = document.getElementById('calGuidShowGrid');
+    if (cgEl) cgEl.checked = on;
+    var ctEl = document.getElementById('calGuidShowTicks');
+    if (ctEl) ctEl.checked = on;
+    syncCalShowOverlayCheckboxes();
+    draw();
+    refreshZpl();
     tryPersist();
-    modal.classList.remove('open');
-    modal.setAttribute('aria-hidden', 'true');
-    var id = state.calibrationModalOpenerFabId || 'btnCalibrateFab';
-    var fab = document.getElementById(id);
-    if (fab) fab.focus();
   }
 
   function getFlexApiConfigObject() {
@@ -4700,6 +6171,13 @@
         ly: state.printCalibration.ly | 0,
         lw: state.printCalibration.lw | 0,
         lh: state.printCalibration.lh | 0
+      },
+      marginBox: {
+        visible: !!state.marginBox.visible,
+        lx: state.marginBox.lx | 0,
+        ly: state.marginBox.ly | 0,
+        lw: state.marginBox.lw | 0,
+        lh: state.marginBox.lh | 0
       }
     };
   }
@@ -4752,6 +6230,22 @@
     } else {
       syncPrintCalibrationFromMargins();
     }
+    var mbIn = lb.marginBox;
+    if (
+      mbIn &&
+      typeof mbIn === 'object' &&
+      (mbIn.lw | 0) >= MIN_CALIB_INNER &&
+      (mbIn.lh | 0) >= MIN_CALIB_INNER
+    ) {
+      state.marginBox.visible = !!mbIn.visible;
+      state.marginBox.lx = mbIn.lx | 0;
+      state.marginBox.ly = mbIn.ly | 0;
+      state.marginBox.lw = mbIn.lw | 0;
+      state.marginBox.lh = mbIn.lh | 0;
+      clampMarginBoxRect();
+    } else {
+      syncMarginBoxFromMargins();
+    }
     state.objects.forEach(function (o) {
       clampObjectIntoInner(o);
       if (o.type === 'barcode') normalizeBarcodeObject(o);
@@ -4771,7 +6265,18 @@
       label: getLabelCalibrationSlice(),
       preview: {
         labelaryPreviewEnabled: state.labelaryPreviewEnabled !== false,
-        previewMarginOverlay: !!state.previewMarginOverlay
+        previewMarginOverlay: !!state.previewMarginOverlay,
+        previewMatchLabelFrame: !!state.previewMatchLabelFrame,
+        previewEdgeOverlay: !!state.previewEdgeOverlay,
+        previewCalOffsetL: state.previewCalOffsetL | 0,
+        previewCalOffsetT: state.previewCalOffsetT | 0,
+        previewCalOffsetR: state.previewCalOffsetR | 0,
+        previewCalOffsetB: state.previewCalOffsetB | 0,
+        canvasWorkspacePadPx: effectiveCanvasWorkspacePadPx(),
+        calibrationShowGrid: !!state.calibrationShowGrid,
+        calibrationShowTicks: !!state.calibrationShowTicks,
+        calibrationZplGuides: !!state.calibrationZplGuides,
+        printerMaxWidthIn: state.printerMaxWidthIn || 6
       },
       templates: []
     };
@@ -4792,12 +6297,6 @@
     writePrintSettingsToUi();
     var pr = document.getElementById('preset');
     if (pr) pr.value = String(PRESETS.length - 1);
-    var cshow = document.getElementById('calShowOverlay');
-    if (cshow) cshow.checked = !!state.printCalibration.visible;
-    var ple = document.getElementById('previewLabelaryEnabled');
-    if (ple) ple.checked = state.labelaryPreviewEnabled !== false;
-    var pmg = document.getElementById('previewMarginOverlayToggle');
-    if (pmg) pmg.checked = !!state.previewMarginOverlay;
     refreshZpl();
     draw();
     schedulePreview(getZplForPreview());
@@ -4817,7 +6316,11 @@
       var rCal = applyLabelCalibrationSlice(raw.label);
       if (!rCal.ok) return rCal;
       finishSettingsImportUi();
-      return { ok: true, message: 'Loaded calibration (label, margins, yellow box).' };
+      return {
+        ok: true,
+        message:
+          'Loaded calibration (label, margins, yellow box). Objects were clamped to the new printable area if needed.'
+      };
     }
     if (k === SETTINGS_KIND_FULL) {
       if (raw.printer != null && typeof raw.printer === 'object') {
@@ -4840,6 +6343,29 @@
         if (raw.preview.previewMarginOverlay != null) {
           state.previewMarginOverlay = !!raw.preview.previewMarginOverlay;
         }
+        if (raw.preview.previewMatchLabelFrame != null) {
+          state.previewMatchLabelFrame = !!raw.preview.previewMatchLabelFrame;
+        }
+        if (raw.preview.previewEdgeOverlay != null) {
+          state.previewEdgeOverlay = !!raw.preview.previewEdgeOverlay;
+        }
+        if (raw.preview.previewCalOffsetL != null) state.previewCalOffsetL = Math.max(0, raw.preview.previewCalOffsetL | 0);
+        if (raw.preview.previewCalOffsetT != null) state.previewCalOffsetT = Math.max(0, raw.preview.previewCalOffsetT | 0);
+        if (raw.preview.previewCalOffsetR != null) state.previewCalOffsetR = Math.max(0, raw.preview.previewCalOffsetR | 0);
+        if (raw.preview.previewCalOffsetB != null) state.previewCalOffsetB = Math.max(0, raw.preview.previewCalOffsetB | 0);
+        if (raw.preview.canvasWorkspacePadPx != null) {
+          var cwpImp = parseInt(raw.preview.canvasWorkspacePadPx, 10);
+          if (!isNaN(cwpImp)) {
+            state.canvasWorkspacePadPx = Math.max(
+              MIN_CANVAS_WORKSPACE_PAD_PX,
+              Math.min(MAX_CANVAS_WORKSPACE_PAD_PX, cwpImp)
+            );
+          }
+        }
+        if (raw.preview.calibrationShowGrid != null) state.calibrationShowGrid = !!raw.preview.calibrationShowGrid;
+        if (raw.preview.calibrationShowTicks != null) state.calibrationShowTicks = !!raw.preview.calibrationShowTicks;
+        if (raw.preview.calibrationZplGuides != null) state.calibrationZplGuides = !!raw.preview.calibrationZplGuides;
+        if (raw.preview.printerMaxWidthIn != null) state.printerMaxWidthIn = Math.max(0.5, Math.min(24, Number(raw.preview.printerMaxWidthIn) || 6));
       }
       if (!state.labelaryPreviewEnabled) {
         applyLabelaryDisabledPreviewState();
@@ -5238,6 +6764,7 @@
     var img = document.getElementById('previewImg');
     var el = document.getElementById('previewScale');
     if (!img || !el) return;
+    syncPreviewLabelFrame();
     if (!img.naturalWidth || !img.complete) {
       el.textContent = '';
       updatePreviewMarginOverlay();
@@ -5251,12 +6778,17 @@
       return;
     }
     var pct = Math.round((rw / img.naturalWidth) * 100);
+    var Ldots = labelDots();
     el.textContent =
       'Labelary ' +
       img.naturalWidth +
       '×' +
       img.naturalHeight +
-      ' px — shown at ~' +
+      ' px — nominal label ^PW×^LL ' +
+      Ldots.w +
+      '×' +
+      Ldots.h +
+      ' dots — shown at ~' +
       pct +
       '% in this panel (drag split above to enlarge)';
     updatePreviewMarginOverlay();
@@ -5278,44 +6810,175 @@
     return { ox: ox, oy: oy, rw: rw, rh: rh };
   }
 
+  function syncPreviewPlatenPadding() {
+    var stage = document.getElementById('previewLabelStage');
+    if (!stage) return;
+    var labelW = Math.max(0.25, Number(state.labelWIn) || 2);
+    var printerW = Math.max(labelW, Number(state.printerMaxWidthIn) || 6);
+    if (printerW <= labelW) {
+      stage.style.setProperty('--preview-platen-pad-h', '6px');
+    } else {
+      var pct = ((printerW - labelW) / printerW) * 50;
+      stage.style.setProperty('--preview-platen-pad-h', 'max(6px, ' + pct.toFixed(2) + '%)');
+    }
+  }
+
+  /** Visual-only: clip Labelary preview to label aspect + scaled rounded shell (Settings → Appearance). */
+  function syncPreviewLabelFrame() {
+    var stage = document.getElementById('previewLabelStage');
+    var box = document.getElementById('previewBox');
+    if (!stage) return;
+    if (!box) box = stage.parentElement;
+    syncPreviewPlatenPadding();
+    var match = !!state.previewMatchLabelFrame;
+    if (!match) {
+      if (box && box.classList) box.classList.remove('preview-label-frame--match');
+      stage.style.removeProperty('border-radius');
+      stage.style.removeProperty('--preview-label-ar-w');
+      stage.style.removeProperty('--preview-label-ar-h');
+      stage.style.removeProperty('--preview-label-radius');
+      return;
+    }
+    if (box && box.classList) box.classList.add('preview-label-frame--match');
+    var wIn = Math.max(0.0001, Number(state.labelWIn) || 1);
+    var hIn = Math.max(0.0001, Number(state.labelHIn) || 1);
+    stage.style.setProperty('--preview-label-ar-w', String(wIn));
+    stage.style.setProperty('--preview-label-ar-h', String(hIn));
+    var rCanvas = effectiveLabelViewCornerRadiusPx();
+    var rCss = 0;
+    if (rCanvas > 0) {
+      var L = labelDots();
+      var labelBufW = L.w * state.pxPerDot;
+      var img = document.getElementById('previewImg');
+      if (img && labelBufW > 0) {
+        var cr = getPreviewImgContentRect(img);
+        if (cr) {
+          rCss = Math.min(cr.rw / 2, cr.rh / 2, (rCanvas * cr.rw) / labelBufW);
+        }
+      }
+    }
+    stage.style.setProperty('--preview-label-radius', rCss > 0 ? rCss + 'px' : '0px');
+    stage.style.borderRadius = rCss > 0 ? rCss + 'px' : '0';
+    void stage.offsetHeight;
+  }
+
   function updatePreviewMarginOverlay() {
+    syncPreviewLabelFrame();
     var overlay = document.getElementById('previewMarginOverlay');
     var img = document.getElementById('previewImg');
-    if (!overlay || !img) return;
+    if (!overlay || !img) {
+      var edgeOnly = document.getElementById('previewEdgeOverlay');
+      if (edgeOnly) {
+        edgeOnly.style.display = 'none';
+        edgeOnly.classList.remove('preview-edge-overlay--interactive');
+      }
+      updatePreviewCalActionsRow();
+      return;
+    }
     if (!state.previewMarginOverlay || !state.labelaryPreviewEnabled) {
       overlay.style.display = 'none';
-      return;
+    } else {
+      var zQuick = maybeSubstituteFlexTokens(getZplForPreview());
+      if (!zplHasPreviewableContent(zQuick)) {
+        overlay.style.display = 'none';
+      } else if (img.classList.contains('preview-img--idle') || !img.naturalWidth) {
+        overlay.style.display = 'none';
+      } else {
+        var Lm = labelDots();
+        var M = marginDots();
+        var inner = innerDots();
+        if (Lm.w <= 0 || Lm.h <= 0 || inner.w <= 0 || inner.h <= 0) {
+          overlay.style.display = 'none';
+        } else {
+          var crM = getPreviewImgContentRect(img);
+          if (!crM) {
+            overlay.style.display = 'none';
+          } else {
+            var fx = M.l / Lm.w;
+            var fy = M.t / Lm.h;
+            var fw = inner.w / Lm.w;
+            var fh = inner.h / Lm.h;
+            var imgBdr2 = parseInt(getComputedStyle(img).borderLeftWidth, 10) || 0;
+            var baseX = img.offsetLeft + imgBdr2 + crM.ox;
+            var baseY = img.offsetTop + imgBdr2 + crM.oy;
+            overlay.style.display = 'block';
+            overlay.style.left = (baseX + fx * crM.rw) + 'px';
+            overlay.style.top = (baseY + fy * crM.rh) + 'px';
+            overlay.style.width = Math.max(0, fw * crM.rw) + 'px';
+            overlay.style.height = Math.max(0, fh * crM.rh) + 'px';
+          }
+        }
+      }
     }
-    var zQuick = maybeSubstituteFlexTokens(getZplForPreview());
-    if (!zplHasPreviewableContent(zQuick)) {
-      overlay.style.display = 'none';
-      return;
-    }
-    if (img.classList.contains('preview-img--idle') || !img.naturalWidth) {
-      overlay.style.display = 'none';
-      return;
-    }
+    positionPreviewEdgeOverlay(img);
+  }
+
+  var previewEdgeDocListenersBound = false;
+
+  function onPreviewEdgeOverlayMouseDown(e) {
+    if (e.button !== 0) return;
+    if (!state.previewEdgeOverlay || !state.labelaryPreviewEnabled) return;
+    var img = document.getElementById('previewImg');
+    var edgeEl = document.getElementById('previewEdgeOverlay');
+    if (!img || !edgeEl || edgeEl.style.display === 'none') return;
     var L = labelDots();
-    var M = marginDots();
-    var inner = innerDots();
-    if (L.w <= 0 || L.h <= 0 || inner.w <= 0 || inner.h <= 0) {
-      overlay.style.display = 'none';
-      return;
-    }
     var cr = getPreviewImgContentRect(img);
-    if (!cr) {
-      overlay.style.display = 'none';
-      return;
+    if (!cr) return;
+    var rect = edgeEl.getBoundingClientRect();
+    var kind = hitTestPreviewEdgeOverlay(e.clientX, e.clientY, rect);
+    if (!kind) return;
+    e.preventDefault();
+    e.stopPropagation();
+    clampPreviewCalOffsets(L);
+    previewEdgeDrag = {
+      kind: kind,
+      startX: e.clientX,
+      startY: e.clientY,
+      oL0: state.previewCalOffsetL | 0,
+      oT0: state.previewCalOffsetT | 0,
+      oR0: state.previewCalOffsetR | 0,
+      oB0: state.previewCalOffsetB | 0,
+      Lw: L.w,
+      Lh: L.h,
+      crRw: cr.rw,
+      crRh: cr.rh
+    };
+  }
+
+  function applyPreviewEdgeDragFromEvent(e) {
+    if (!previewEdgeDrag) return;
+    var d = previewEdgeDrag;
+    var dDotsX = Math.round((e.clientX - d.startX) * d.Lw / d.crRw);
+    var dDotsY = Math.round((e.clientY - d.startY) * d.Lh / d.crRh);
+    var ol = d.oL0;
+    var ot = d.oT0;
+    var or = d.oR0;
+    var ob = d.oB0;
+    var k = d.kind;
+    if (k === 'move') {
+      ol = d.oL0 + dDotsX;
+      or = d.oR0 - dDotsX;
+      ot = d.oT0 + dDotsY;
+      ob = d.oB0 - dDotsY;
+    } else {
+      if (k === 'w' || k === 'nw' || k === 'sw') ol = d.oL0 + dDotsX;
+      if (k === 'e' || k === 'ne' || k === 'se') or = d.oR0 - dDotsX;
+      if (k === 'n' || k === 'nw' || k === 'ne') ot = d.oT0 + dDotsY;
+      if (k === 's' || k === 'sw' || k === 'se') ob = d.oB0 - dDotsY;
     }
-    var fx = M.l / L.w;
-    var fy = M.t / L.h;
-    var fw = inner.w / L.w;
-    var fh = inner.h / L.h;
-    overlay.style.display = 'block';
-    overlay.style.left = cr.ox + fx * cr.rw + 'px';
-    overlay.style.top = cr.oy + fy * cr.rh + 'px';
-    overlay.style.width = Math.max(0, fw * cr.rw) + 'px';
-    overlay.style.height = Math.max(0, fh * cr.rh) + 'px';
+    state.previewCalOffsetL = ol;
+    state.previewCalOffsetT = ot;
+    state.previewCalOffsetR = or;
+    state.previewCalOffsetB = ob;
+    clampPreviewCalOffsets(labelDots());
+    var img2 = document.getElementById('previewImg');
+    if (img2) positionPreviewEdgeOverlay(img2);
+  }
+
+  function endPreviewEdgeDrag() {
+    if (!previewEdgeDrag) return;
+    previewEdgeDrag = null;
+    tryPersist();
   }
 
   function schedulePreview(zpl) {
@@ -5482,6 +7145,7 @@
     syncCanvasSize();
     for (var i = state.objects.length - 1; i >= 0; i--) {
       var o = state.objects[i];
+      if (o.hidden) continue;
       normalizeObjectOrient(o);
       var rect = localRectCanvasPx(o);
       if (hitTestTransformedRect(mx, my, rect, o.rotQ, o.flipH, o.flipV)) return o;
@@ -5523,12 +7187,14 @@
         type: 'text',
         x: p.x,
         y: p.y,
+        hidden: false,
         content: state.flexTextPlaceToken || '[element.name]',
         zplFont: '0',
         fontH: 28,
         fontW: 26,
         utf8: true,
-        textBack: 'none'
+        textBack: 'none',
+        textHAlign: 'left'
       };
       clampTextObjectFonts(nt);
       state.objects.push(nt);
@@ -5543,6 +7209,7 @@
         sym: 'qr',
         x: p.x,
         y: p.y,
+        hidden: false,
         dataSource: dsPl,
         data: dsPl === 'flex' ? '[barcode]' : String(state.flexBarcodeToolCustom || 'TEXT'),
         labelPos: 'none',
@@ -5563,6 +7230,7 @@
         type: 'line',
         x: p.x,
         y: p.y,
+        hidden: false,
         lineOrient: 'h',
         lineLen: 120,
         lineThick: 3
@@ -5576,6 +7244,7 @@
         type: 'box',
         x: p.x,
         y: p.y,
+        hidden: false,
         boxW: 100,
         boxH: 50,
         boxThick: 2,
@@ -5614,8 +7283,10 @@
           type: 'image',
           x: pos.x,
           y: pos.y,
+          hidden: false,
           iw: 80,
           ih: 40,
+          linkIwIh: true,
           threshold: 140,
           imageDataUrl: r.result
         };
@@ -5753,7 +7424,10 @@
       (function (arrIdx) {
         var o = state.objects[arrIdx];
         var row = document.createElement('div');
-        row.className = 'el-item' + (o.id === state.selectedId ? ' selected' : '');
+        row.className =
+          'el-item' +
+          (o.id === state.selectedId ? ' selected' : '') +
+          (o.hidden ? ' el-item--hidden' : '');
         row.draggable = true;
         row.setAttribute('data-arr-idx', arrIdx);
 
@@ -5835,6 +7509,23 @@
         actions.className = 'el-layer-actions';
         actions.draggable = false;
 
+        var btnVis = document.createElement('button');
+        btnVis.type = 'button';
+        btnVis.className = 'el-layer-btn';
+        btnVis.title = o.hidden ? 'Show on canvas & print' : 'Hide on canvas & print';
+        btnVis.setAttribute('aria-label', o.hidden ? 'Show layer' : 'Hide layer');
+        btnVis.setAttribute('aria-pressed', o.hidden ? 'true' : 'false');
+        btnVis.textContent = o.hidden ? '\uD83D\uDD76' : '\uD83D\uDC41';
+        btnVis.addEventListener('click', function (ev) {
+          ev.stopPropagation();
+          o.hidden = !o.hidden;
+          renderElementList();
+          renderProps();
+          pushZplFromModel();
+          draw();
+          tryPersist();
+        });
+
         var btnUp = document.createElement('button');
         btnUp.type = 'button';
         btnUp.className = 'el-layer-btn';
@@ -5879,6 +7570,7 @@
           deleteObjectById(o.id);
         });
 
+        actions.appendChild(btnVis);
         actions.appendChild(btnUp);
         actions.appendChild(btnDown);
         actions.appendChild(btnDup);
@@ -5911,13 +7603,29 @@
     ed.style.display = 'block';
 
     var html = '';
-    html += '<div class="prop"><label>X (dots)</label><input type="number" data-k="x" value="' + o.x + '" /></div>';
-    html += '<div class="prop"><label>Y (dots)</label><input type="number" data-k="y" value="' + o.y + '" /></div>';
+    html +=
+      '<div class="prop"><label>X (dots' +
+      (o.type === 'text' ? ', anchor' : '') +
+      ')</label><input type="number" data-k="x" value="' +
+      o.x +
+      '" /></div>';
+    html +=
+      '<div class="prop"><label>Y (dots' +
+      (o.type === 'text' ? ', anchor' : '') +
+      ')</label><input type="number" data-k="y" value="' +
+      o.y +
+      '" /></div>';
+    var Lb = labelDots();
+    var inner = innerDots();
+    if (inner.w < Lb.w || inner.h < Lb.h) {
+      html +=
+        '<p class="hint" style="margin:0 0 0.35rem;font-size:11px">X and Y are in <strong>printable (green)</strong> dot coordinates — origin at the top-left of the green dashed area, not necessarily the physical label edge.</p>';
+    }
     normalizeObjectOrient(o);
     var trNote =
       o.type === 'text' || o.type === 'barcode'
         ? '<p class="hint" style="margin:0;font-size:11px">ZPL rotation: ^A and ^B* use N/R/I/B (Labelary preview). Flip is preview-only for text and barcodes.</p>'
-        : '<p class="hint" style="margin:0;font-size:11px">ZPL rotation: ^FW for lines/boxes/images; ^A/^B* orientation for text and barcodes.</p>';
+        : '<p class="hint" style="margin:0;font-size:11px">ZPL rotation: ^FW for lines/boxes; ^A/^B* for text/barcodes. Images: rotation/flip are baked into ^GFA (Labelary-friendly).</p>';
     html +=
       '<div class="prop"><label>Rotate / mirror</label><div class="row-btns" style="flex-wrap:wrap;gap:0.35rem">' +
       '<button type="button" class="btn secondary" data-transform="rot-ccw" title="90° counter-clockwise">↺ 90°</button>' +
@@ -5951,6 +7659,19 @@
       html += '</select></div>';
       html += '<div class="prop"><label>Font height (dots)</label><input type="number" data-k="fontH" min="8" max="320" value="' + (o.fontH || 28) + '" /></div>';
       html += '<div class="prop"><label>Font width (dots)</label><input type="number" data-k="fontW" min="8" max="320" value="' + (o.fontW || 26) + '" /></div>';
+      var hAlign = normalizeTextHAlign(o);
+      html +=
+        '<div class="prop"><label>Align from</label><select data-k="textHAlign" title="X/Y anchor: left edge, horizontal center, or right edge of the text box (matches generated ZPL ^FT position).">' +
+        '<option value="left"' +
+        (hAlign === 'left' ? ' selected' : '') +
+        '>Left</option>' +
+        '<option value="center"' +
+        (hAlign === 'center' ? ' selected' : '') +
+        '>Center</option>' +
+        '<option value="right"' +
+        (hAlign === 'right' ? ' selected' : '') +
+        '>Right</option>' +
+        '</select></div>';
       html += '<div class="prop"><label class="chk"><input type="checkbox" data-k="utf8" ' + (o.utf8 ? 'checked' : '') + ' /> UTF-8 (^CI28) for special chars</label></div>';
       var tbSel =
         o.textBack === 'white' || o.textBack === 'invert' ? o.textBack : 'none';
@@ -6066,8 +7787,31 @@
       html +=
         '<p class="hint" style="margin:0;font-size:11px">Resize the barcode on the label: <strong>SE handle</strong> changes magnification (2D) or module width &amp; bar height (1D). Size matches ZPL preview.</p>';
     } else if (o.type === 'image') {
-      html += '<div class="prop"><label>Width (dots)</label><input type="number" data-k="iw" min="8" max="800" value="' + (o.iw || 80) + '" /></div>';
-      html += '<div class="prop"><label>Height (dots)</label><input type="number" data-k="ih" min="8" max="800" value="' + (o.ih || 40) + '" /></div>';
+      var imgLinked = !!o.linkIwIh;
+      var svgAspectOn =
+        '<svg class="btn-aspect-link-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+      var svgAspectOff =
+        '<svg class="btn-aspect-link-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" opacity="0.45"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" opacity="0.45"/><line x1="3" y1="21" x2="21" y2="3"/></svg>';
+      html +=
+        '<div class="prop prop-image-size-row">' +
+        '<span class="prop-image-size-label">Size (dots)</span>' +
+        '<div class="prop-image-size-fields">' +
+        '<div class="img-dim-wrap"><label for="propImgIw">W</label><input id="propImgIw" type="number" data-k="iw" min="8" max="800" value="' +
+        (o.iw || 80) +
+        '" /></div>' +
+        '<button type="button" class="btn-aspect-link" id="btnImageAspectLink" aria-pressed="' +
+        (imgLinked ? 'true' : 'false') +
+        '" title="' +
+        (imgLinked ? 'Aspect ratio linked — click to resize W and H independently' : 'W and H independent — click to link and keep aspect ratio') +
+        '" aria-label="' +
+        (imgLinked ? 'Unlink width and height' : 'Link width and height to aspect ratio') +
+        '">' +
+        (imgLinked ? svgAspectOn : svgAspectOff) +
+        '</button>' +
+        '<div class="img-dim-wrap"><label for="propImgIh">H</label><input id="propImgIh" type="number" data-k="ih" min="8" max="800" value="' +
+        (o.ih || 40) +
+        '" /></div>' +
+        '</div></div>';
       html += '<div class="prop"><label>B/W threshold (0–255)</label><input type="number" data-k="threshold" min="0" max="255" value="' + (o.threshold != null ? o.threshold : 140) + '" /></div>';
       html += '<div class="prop"><label>Replace image</label><input type="file" id="pfImg" accept="image/*" /></div>';
     } else if (o.type === 'line') {
@@ -6116,6 +7860,9 @@
         else if (kind === 'flipH') cur.flipH = !cur.flipH;
         else if (kind === 'flipV') cur.flipV = !cur.flipV;
         if (cur.type === 'barcode') invalidateBarcodeQrCacheAndRemerge(cur);
+        else if (cur.type === 'image' && cur._imgEl && cur._imgEl.complete && cur.imageDataUrl) {
+          rebuildImageGfa(cur);
+        }
         clampObjectIntoInner(cur);
         refreshZpl();
         draw();
@@ -6193,6 +7940,25 @@
           applyImageToObject(o, r.result);
         };
         r.readAsDataURL(f);
+        ev.target.value = '';
+      });
+    }
+    var aspectLinkBtn = document.getElementById('btnImageAspectLink');
+    if (aspectLinkBtn) {
+      aspectLinkBtn.addEventListener('click', function () {
+        var cur = state.objects.find(function (x) { return x.id === state.selectedId; });
+        if (!cur || cur.type !== 'image' || cur.id !== o.id) return;
+        cur.linkIwIh = !cur.linkIwIh;
+        if (cur.linkIwIh) {
+          syncImageLinkedDimensions(cur, 'w');
+        }
+        if (cur._imgEl && cur.imageDataUrl) {
+          rebuildImageGfa(cur);
+        }
+        pushZplFromModel();
+        draw();
+        renderProps();
+        tryPersist();
       });
     }
   }
@@ -6283,10 +8049,20 @@
     var el = ev.target;
     var k = el.getAttribute('data-k');
     if (!k) return;
-    if (el.type === 'checkbox') o[k] = el.checked;
+    if (o.type === 'image' && (k === 'iw' || k === 'ih')) {
+      var vImg = Math.max(8, Math.min(800, parseFloat(el.value) || 8));
+      o[k] = vImg;
+      if (o.linkIwIh) {
+        syncImageLinkedDimensions(o, k === 'ih' ? 'h' : 'w');
+      }
+    } else if (el.type === 'checkbox') o[k] = el.checked;
     else if (el.type === 'number') o[k] = parseFloat(el.value) || 0;
     else if (el.type === 'range') o[k] = parseFloat(el.value) || 0;
     else o[k] = el.value;
+    if (o.type === 'text' && k === 'textHAlign') {
+      o.textHAlign = normalizeTextHAlign(o);
+      clampObjectIntoInner(o);
+    }
     if (o.type === 'text' && (k === 'fontH' || k === 'fontW' || k === 'zplFont')) {
       clampTextObjectFonts(o);
     }
@@ -6345,6 +8121,9 @@
     ) {
       renderProps();
     }
+    if (o.type === 'image' && (k === 'iw' || k === 'ih')) {
+      updatePropInputsFromObject(o);
+    }
   }
 
   function applyImageToObject(o, dataUrl) {
@@ -6354,6 +8133,9 @@
       o._imgEl = im;
       if (!o.iw) o.iw = Math.min(200, im.naturalWidth);
       if (!o.ih) o.ih = Math.min(100, im.naturalHeight);
+      if (o.linkIwIh) {
+        syncImageLinkedDimensions(o, 'w');
+      }
       rebuildImageGfa(o);
       renderProps();
       refreshZpl();
@@ -6362,11 +8144,34 @@
     im.src = dataUrl;
   }
 
+  /** Width ÷ height; prefers loaded bitmap natural size. */
+  function getImageAspectRatioWH(o) {
+    if (o._imgEl && o._imgEl.complete && o._imgEl.naturalWidth > 0 && o._imgEl.naturalHeight > 0) {
+      return o._imgEl.naturalWidth / o._imgEl.naturalHeight;
+    }
+    var iw = Math.max(1, o.iw | 0 || 80);
+    var ih = Math.max(1, o.ih | 0 || 40);
+    return iw / ih;
+  }
+
+  /** driver: 'w' = keep iw, adjust ih; 'h' = keep ih, adjust iw */
+  function syncImageLinkedDimensions(o, driver) {
+    if (!o || o.type !== 'image' || !o.linkIwIh) return;
+    var ar = getImageAspectRatioWH(o);
+    if (!(ar > 0) || !isFinite(ar)) return;
+    if (driver === 'h') {
+      o.ih = Math.max(8, Math.min(800, o.ih | 0));
+      o.iw = Math.max(8, Math.min(800, Math.round(o.ih * ar)));
+    } else {
+      o.iw = Math.max(8, Math.min(800, o.iw | 0));
+      o.ih = Math.max(8, Math.min(800, Math.round(o.iw / ar)));
+    }
+  }
+
   function rebuildImageGfa(o) {
     if (!o._imgEl || !o._imgEl.complete) return;
     o._imgDesignKey = null;
-    var th = o.threshold != null ? o.threshold : 140;
-    var g = rasterToGFA(o._imgEl, Math.max(8, o.iw | 0), Math.max(8, o.ih | 0), th);
+    var g = rasterToGFAWithOrient(o._imgEl, o);
     o.gfaHex = g.hex;
     o.gfaRowBytes = g.rowBytes;
     o.gfaH = g.h;
@@ -6447,11 +8252,14 @@
       type: 'text',
       x: 10,
       y: 10,
+      hidden: false,
       content: state.flexTextPlaceToken || '[element.name]',
       zplFont: '0',
       fontH: 28,
       fontW: 26,
-      utf8: true
+      utf8: true,
+      textBack: 'none',
+      textHAlign: 'left'
     };
     clampTextObjectFonts(nt);
     state.objects.push(nt);
@@ -6469,6 +8277,7 @@
       sym: 'qr',
       x: 10,
       y: 40,
+      hidden: false,
       dataSource: dsAb,
       data: dsAb === 'flex' ? '[barcode]' : String(state.flexBarcodeToolCustom || 'TEXT'),
       labelPos: 'none',
@@ -6658,11 +8467,90 @@
         tryPersist();
       });
     }
-    var calShow = document.getElementById('calShowOverlay');
-    if (calShow) {
-      calShow.addEventListener('change', function () {
-        state.printCalibration.visible = !!calShow.checked;
+    function wireCalShowOverlayCheckbox(domId) {
+      var el = document.getElementById(domId);
+      if (!el) return;
+      el.addEventListener('change', function () {
+        state.printCalibration.visible = !!el.checked;
+        syncCalShowOverlayCheckboxes();
         draw();
+        tryPersist();
+      });
+    }
+    wireCalShowOverlayCheckbox('calShowOverlay');
+    wireCalShowOverlayCheckbox('calShowOverlaySettings');
+
+    function wireMarginBoxShowCheckbox(domId) {
+      var el = document.getElementById(domId);
+      if (!el) return;
+      el.addEventListener('change', function () {
+        if (el.checked && !state.marginBox.visible) {
+          syncMarginBoxFromMargins();
+          clampMarginBoxRect();
+        }
+        state.marginBox.visible = !!el.checked;
+        syncMarginBoxShowCheckboxes();
+        draw();
+        tryPersist();
+      });
+    }
+    wireMarginBoxShowCheckbox('marginBoxShow');
+    wireMarginBoxShowCheckbox('marginBoxShowSettings');
+
+    var btnMarginBoxApply = document.getElementById('btnMarginBoxApply');
+    if (btnMarginBoxApply) {
+      btnMarginBoxApply.addEventListener('click', function () {
+        applyMarginBoxAsMargins();
+      });
+    }
+    var btnMarginBoxApplySettings = document.getElementById('btnMarginBoxApplySettings');
+    if (btnMarginBoxApplySettings) {
+      btnMarginBoxApplySettings.addEventListener('click', function () {
+        applyMarginBoxAsMargins();
+      });
+    }
+    var btnMarginBoxSnapGreen = document.getElementById('btnMarginBoxSnapGreen');
+    if (btnMarginBoxSnapGreen) {
+      btnMarginBoxSnapGreen.addEventListener('click', function () {
+        syncMarginBoxFromMargins();
+        clampMarginBoxRect();
+        state.marginBox.visible = true;
+        syncMarginBoxShowCheckboxes();
+        draw();
+        tryPersist();
+        var msg = document.getElementById('marginBoxApplyMsg');
+        if (msg) msg.textContent = 'Pink margin box snapped to the current green printable area.';
+      });
+    }
+
+    var calGuidGrid = document.getElementById('calGuidShowGrid');
+    if (calGuidGrid) {
+      calGuidGrid.addEventListener('change', function () {
+        state.calibrationShowGrid = !!calGuidGrid.checked;
+        draw();
+        tryPersist();
+      });
+    }
+    var calGuidTicks = document.getElementById('calGuidShowTicks');
+    if (calGuidTicks) {
+      calGuidTicks.addEventListener('change', function () {
+        state.calibrationShowTicks = !!calGuidTicks.checked;
+        draw();
+        tryPersist();
+      });
+    }
+    var calLockAspectEl = document.getElementById('calLockAspect');
+    if (calLockAspectEl) {
+      calLockAspectEl.addEventListener('change', function () {
+        state.calibrationLockAspect = !!calLockAspectEl.checked;
+        tryPersist();
+      });
+    }
+    var calZplGuidesEl = document.getElementById('calZplGuides');
+    if (calZplGuidesEl) {
+      calZplGuidesEl.addEventListener('change', function () {
+        state.calibrationZplGuides = !!calZplGuidesEl.checked;
+        refreshZpl();
         tryPersist();
       });
     }
@@ -6680,19 +8568,31 @@
         matchPrintCalibrationToSelectedBox();
       });
     }
+    var calAddEdgeTestBox = document.getElementById('calAddEdgeTestBox');
+    if (calAddEdgeTestBox) {
+      calAddEdgeTestBox.addEventListener('click', function () {
+        addEdgeToEdgeCalibrationBox();
+      });
+    }
     var calApplyBtn = document.getElementById('calApply');
     if (calApplyBtn) {
       calApplyBtn.addEventListener('click', function () {
         applyPrintCalibration();
       });
     }
+    var calRebuild = document.getElementById('calRebuildLabel');
+    if (calRebuild) {
+      calRebuild.addEventListener('click', function () {
+        applyCalibrationBoxAsLabelSizeFromUi();
+      });
+    }
     var btnResetLabelDefaults = document.getElementById('btnResetLabelDefaults');
     if (btnResetLabelDefaults) {
       btnResetLabelDefaults.addEventListener('click', resetLabelToFactoryDefaults);
     }
-    var calResetAllDefaults = document.getElementById('calResetAllDefaults');
-    if (calResetAllDefaults) {
-      calResetAllDefaults.addEventListener('click', resetLabelToFactoryDefaults);
+    var btnResetCanvas = document.getElementById('btnResetCanvas');
+    if (btnResetCanvas) {
+      btnResetCanvas.addEventListener('click', resetDesignerCanvas);
     }
     var btnExportCalibration = document.getElementById('btnExportCalibration');
     if (btnExportCalibration) {
@@ -6706,7 +8606,8 @@
         a.click();
         URL.revokeObjectURL(a.href);
         if (msg) {
-          msg.textContent = 'Exported calibration JSON (label size, margins, yellow box state).';
+          msg.textContent =
+            'Exported calibration JSON (label size, margins, yellow overlay — no canvas objects).';
           msg.style.color = '';
         }
       });
@@ -6752,11 +8653,15 @@
     function readSnapSettings() {
       state.snapToObjects = document.getElementById('snapObjects').checked;
       state.snapShowGrid = document.getElementById('snapShowGrid').checked;
+      var sgfcEl = document.getElementById('snapGridFromCenter');
+      if (sgfcEl) state.snapGridFromCenter = !!sgfcEl.checked;
+      var ssclEl = document.getElementById('snapShowCenterLines');
+      if (ssclEl) state.snapShowCenterLines = !!ssclEl.checked;
       state.snapGridEnabled = document.getElementById('snapGrid').checked;
       state.snapGridW = Math.max(2, parseInt(document.getElementById('gridW').value, 10) || 20);
       state.snapGridH = Math.max(2, parseInt(document.getElementById('gridH').value, 10) || 20);
     }
-    ['snapObjects', 'snapShowGrid', 'snapGrid'].forEach(function (sid) {
+    ['snapObjects', 'snapShowGrid', 'snapGrid', 'snapGridFromCenter', 'snapShowCenterLines'].forEach(function (sid) {
       document.getElementById(sid).addEventListener('change', function () {
         readSnapSettings();
         draw();
@@ -6857,13 +8762,10 @@
 
     var settingsModal = document.getElementById('settingsModal');
     var settingsCard = settingsModal ? settingsModal.querySelector('.print-modal-card') : null;
-    var calibrationModal = document.getElementById('calibrationModal');
-    var calibrationCard = calibrationModal ? calibrationModal.querySelector('.print-modal-card') : null;
     var btnOpenDirectPrint = document.getElementById('btnOpenDirectPrint');
     var btnSettingsFab = document.getElementById('btnSettingsFab');
     var btnCalibrateFab = document.getElementById('btnCalibrateFab');
     var btnCloseSettings = document.getElementById('btnCloseSettings');
-    var btnCloseCalibration = document.getElementById('btnCloseCalibration');
     if (btnOpenDirectPrint) {
       btnOpenDirectPrint.addEventListener('click', function () {
         openSettingsModal('printer', 'btnOpenDirectPrint');
@@ -6881,9 +8783,6 @@
     }
     if (btnCloseSettings) {
       btnCloseSettings.addEventListener('click', closeSettingsModal);
-    }
-    if (btnCloseCalibration) {
-      btnCloseCalibration.addEventListener('click', closeCalibrationModal);
     }
     var btnAboutClose = document.getElementById('btnAboutClose');
     if (btnAboutClose) {
@@ -6931,12 +8830,69 @@
         updatePreviewMarginOverlay();
       });
     }
-    var previewImgWrapEl = document.getElementById('previewImgWrap');
-    if (previewImgWrapEl && typeof ResizeObserver !== 'undefined') {
+    var previewMatchFrameChk = document.getElementById('previewMatchLabelFrameChk');
+    if (previewMatchFrameChk) {
+      previewMatchFrameChk.addEventListener('change', function () {
+        state.previewMatchLabelFrame = !!previewMatchFrameChk.checked;
+        tryPersist();
+        updatePreviewMarginOverlay();
+      });
+    }
+    var previewEdgeOverlayToggle = document.getElementById('previewEdgeOverlayToggle');
+    if (previewEdgeOverlayToggle) {
+      previewEdgeOverlayToggle.addEventListener('change', function () {
+        state.previewEdgeOverlay = !!previewEdgeOverlayToggle.checked;
+        if (!state.previewEdgeOverlay) {
+          previewEdgeDrag = null;
+          state.previewCalOffsetL = state.previewCalOffsetT = state.previewCalOffsetR = state.previewCalOffsetB = 0;
+        }
+        tryPersist();
+        updatePreviewMarginOverlay();
+      });
+    }
+    var printerMaxWInput = document.getElementById('printerMaxWidthIn');
+    if (printerMaxWInput) {
+      printerMaxWInput.addEventListener('change', function () {
+        state.printerMaxWidthIn = Math.max(0.5, Math.min(24, Number(printerMaxWInput.value) || 6));
+        printerMaxWInput.value = state.printerMaxWidthIn;
+        syncPreviewPlatenPadding();
+        tryPersist();
+      });
+    }
+    var btnPreviewCalApplyMargins = document.getElementById('btnPreviewCalApplyMargins');
+    if (btnPreviewCalApplyMargins) {
+      btnPreviewCalApplyMargins.addEventListener('click', function () {
+        applyPreviewCalOffsetsAsMargins();
+      });
+    }
+    var btnPreviewCalCopyYellow = document.getElementById('btnPreviewCalCopyYellow');
+    if (btnPreviewCalCopyYellow) {
+      btnPreviewCalCopyYellow.addEventListener('click', function () {
+        copyPreviewCalToYellowOverlay();
+      });
+    }
+    var previewEdgeOverlayEl = document.getElementById('previewEdgeOverlay');
+    if (previewEdgeOverlayEl) {
+      previewEdgeOverlayEl.addEventListener('mousedown', onPreviewEdgeOverlayMouseDown);
+    }
+    if (!previewEdgeDocListenersBound) {
+      previewEdgeDocListenersBound = true;
+      document.addEventListener('mousemove', function (ev) {
+        if (previewEdgeDrag) {
+          ev.preventDefault();
+          applyPreviewEdgeDragFromEvent(ev);
+        }
+      });
+      document.addEventListener('mouseup', function () {
+        endPreviewEdgeDrag();
+      });
+    }
+    var previewStageEl = document.getElementById('previewLabelStage');
+    if (previewStageEl && typeof ResizeObserver !== 'undefined') {
       var previewMarginObs = new ResizeObserver(function () {
         updatePreviewMarginOverlay();
       });
-      previewMarginObs.observe(previewImgWrapEl);
+      previewMarginObs.observe(previewStageEl);
     }
     var flexTestDataRows = document.getElementById('flexTestDataRows');
     if (flexTestDataRows) {
@@ -6991,25 +8947,8 @@
         e.stopPropagation();
       });
     }
-    if (calibrationModal) {
-      calibrationModal.addEventListener('click', function (e) {
-        if (e.target === calibrationModal) {
-          closeCalibrationModal();
-        }
-      });
-    }
-    if (calibrationCard) {
-      calibrationCard.addEventListener('click', function (e) {
-        e.stopPropagation();
-      });
-    }
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
-        if (calibrationModal && calibrationModal.classList.contains('open')) {
-          closeCalibrationModal();
-          e.preventDefault();
-          return;
-        }
         if (!settingsModal || !settingsModal.classList.contains('open')) {
           return;
         }
@@ -7550,6 +9489,23 @@
       var mx = c.mx;
       var my = c.my;
       if (!pointerInCanvasWorkspace(mx, my)) return;
+      var mbHit = hitTestMarginBox(mx, my);
+      if (mbHit) {
+        e.preventDefault();
+        marginBoxDrag = {
+          kind: mbHit,
+          startMx: mx,
+          startMy: my,
+          lx0: state.marginBox.lx,
+          ly0: state.marginBox.ly,
+          lw0: state.marginBox.lw,
+          lh0: state.marginBox.lh
+        };
+        drag = null;
+        resizeDrag = null;
+        calDrag = null;
+        return;
+      }
       var calHit = state.printCalibration.visible ? hitTestPrintCalibration(mx, my) : null;
       if (calHit) {
         e.preventDefault();
@@ -7564,6 +9520,7 @@
         };
         drag = null;
         resizeDrag = null;
+        marginBoxDrag = null;
         return;
       }
       var rh = hitTestResizeHandle(mx, my);
@@ -7598,8 +9555,13 @@
     });
     canvas.addEventListener('mousemove', function (e) {
       var c = canvasCoords(e);
+      if (marginBoxDrag) {
+        applyMarginBoxDrag(c.mx, c.my);
+        return;
+      }
       if (calDrag) {
         applyCalDrag(c.mx, c.my);
+        if (state.calibrationZplGuides) pushZplFromModelSoon();
         return;
       }
       if (resizeDrag) {
@@ -7626,18 +9588,27 @@
         return;
       }
       if (pointerInCanvasWorkspace(c.mx, c.my)) {
-        var ch = state.printCalibration.visible ? hitTestPrintCalibration(c.mx, c.my) : null;
-        if (ch === 'move') canvas.style.cursor = 'move';
-        else if (ch === 'n' || ch === 's') canvas.style.cursor = 'ns-resize';
-        else if (ch === 'e' || ch === 'w') canvas.style.cursor = 'ew-resize';
-        else if (ch === 'nw' || ch === 'se') canvas.style.cursor = 'nwse-resize';
-        else if (ch === 'ne' || ch === 'sw') canvas.style.cursor = 'nesw-resize';
-        else {
-          var rh = hitTestResizeHandle(c.mx, c.my);
-          if (rh) {
-            canvas.style.cursor = rh.corner === 'se' ? 'se-resize' : 'nw-resize';
-          } else {
-            canvas.style.cursor = state.tool === 'select' ? 'default' : 'crosshair';
+        var mbCur = hitTestMarginBox(c.mx, c.my);
+        if (mbCur) {
+          if (mbCur === 'move') canvas.style.cursor = 'move';
+          else if (mbCur === 'n' || mbCur === 's') canvas.style.cursor = 'ns-resize';
+          else if (mbCur === 'e' || mbCur === 'w') canvas.style.cursor = 'ew-resize';
+          else if (mbCur === 'nw' || mbCur === 'se') canvas.style.cursor = 'nwse-resize';
+          else if (mbCur === 'ne' || mbCur === 'sw') canvas.style.cursor = 'nesw-resize';
+        } else {
+          var ch = state.printCalibration.visible ? hitTestPrintCalibration(c.mx, c.my) : null;
+          if (ch === 'move') canvas.style.cursor = 'move';
+          else if (ch === 'n' || ch === 's') canvas.style.cursor = 'ns-resize';
+          else if (ch === 'e' || ch === 'w') canvas.style.cursor = 'ew-resize';
+          else if (ch === 'nw' || ch === 'se') canvas.style.cursor = 'nwse-resize';
+          else if (ch === 'ne' || ch === 'sw') canvas.style.cursor = 'nesw-resize';
+          else {
+            var rh = hitTestResizeHandle(c.mx, c.my);
+            if (rh) {
+              canvas.style.cursor = rh.corner === 'se' ? 'se-resize' : 'nw-resize';
+            } else {
+              canvas.style.cursor = state.tool === 'select' ? 'default' : 'crosshair';
+            }
           }
         }
       } else {
@@ -7645,10 +9616,11 @@
       }
     });
     window.addEventListener('mouseup', function () {
-      var hadInteract = drag || resizeDrag || calDrag;
+      var hadInteract = drag || resizeDrag || calDrag || marginBoxDrag;
       drag = null;
       resizeDrag = null;
       calDrag = null;
+      marginBoxDrag = null;
       if (hadInteract) flushPushZplFromModel();
     });
   }
@@ -7725,6 +9697,7 @@
     if (td) td.checked = !isLight;
     if (tl) tl.checked = isLight;
     draw();
+    updatePreviewMarginOverlay();
   }
 
   function syncThemeRadiosFromDom() {
@@ -7771,6 +9744,7 @@
         if (labelRadiusInp) labelRadiusInp.value = '0';
       }
       draw();
+      updatePreviewMarginOverlay();
       tryPersist();
     });
   }
@@ -7782,6 +9756,7 @@
       state.labelViewCornerRadiusPx = v;
       if (labelRoundedChk) labelRoundedChk.checked = v > 0;
       draw();
+      updatePreviewMarginOverlay();
     });
     labelRadiusInp.addEventListener('change', function () {
       var v = Math.max(0, Math.min(48, parseInt(labelRadiusInp.value, 10) || 0));
@@ -7789,6 +9764,29 @@
       state.labelViewCornerRadiusPx = v;
       if (labelRoundedChk) labelRoundedChk.checked = v > 0;
       draw();
+      updatePreviewMarginOverlay();
+      tryPersist();
+    });
+  }
+  var canvasWorkspacePadInp = document.getElementById('canvasWorkspacePadPx');
+  if (canvasWorkspacePadInp) {
+    canvasWorkspacePadInp.addEventListener('input', function () {
+      var v = parseInt(canvasWorkspacePadInp.value, 10);
+      if (isNaN(v)) return;
+      state.canvasWorkspacePadPx = Math.max(
+        MIN_CANVAS_WORKSPACE_PAD_PX,
+        Math.min(MAX_CANVAS_WORKSPACE_PAD_PX, v)
+      );
+      scheduleLayoutRefit();
+    });
+    canvasWorkspacePadInp.addEventListener('change', function () {
+      var v = Math.max(
+        MIN_CANVAS_WORKSPACE_PAD_PX,
+        Math.min(MAX_CANVAS_WORKSPACE_PAD_PX, parseInt(canvasWorkspacePadInp.value, 10) || DEFAULT_CANVAS_WORKSPACE_PAD_PX)
+      );
+      canvasWorkspacePadInp.value = String(v);
+      state.canvasWorkspacePadPx = v;
+      refitLayoutForViewport();
       tryPersist();
     });
   }
