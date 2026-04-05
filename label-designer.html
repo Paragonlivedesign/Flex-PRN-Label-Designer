@@ -13,7 +13,7 @@
 
   IMPORT: Import… loads a .prn/.txt for view/edit and preview (canvas stays for reference;
   use "Back to designer" to regenerate ZPL from objects). Save .prn downloads current ZPL.
-  Save project / Open project stores the full layout (and optional imported ZPL) as JSON.
+  Save .flexlabel / Open .flexlabel stores the full layout (and optional imported ZPL) as JSON — not Zebra .nlbl. Older .json and .nlbl (from this designer) exports still open.
 
   SETTINGS (bottom-right): Appearance, Layout (Flex header, tool defaults), Help, Printer, Flex API, Scan & load, Test data, About. "Test data" next to Calibrate toggles sample merge values for preview.
   Export calibration / Import calibration (Calibrate dialog): label size, margins, and yellow-box calibration only — no canvas objects.
@@ -911,11 +911,11 @@
           <button type="button" class="btn secondary" id="btnOpenDirectPrint" title="Printer, PowerShell send, relay (Settings → Printer)">Direct print…</button>
           <button type="button" class="btn secondary" id="btnDl">Save .prn</button>
           <button type="button" class="btn secondary" id="btnImport">Import…</button>
-          <button type="button" class="btn secondary" id="btnSaveProject">Save project</button>
-          <button type="button" class="btn secondary" id="btnOpenProject">Open project</button>
+          <button type="button" class="btn secondary" id="btnSaveProject" title="Saves layout as .flexlabel (JSON). Not Zebra NLBL. Legacy .json / .nlbl from this app still open.">Save .flexlabel</button>
+          <button type="button" class="btn secondary" id="btnOpenProject" title="Open .flexlabel, legacy .nlbl from this app, or .json.">Open .flexlabel</button>
         </div>
         <input type="file" id="fileImport" accept=".prn,.txt,.zpl,text/plain" style="display:none" />
-        <input type="file" id="fileProject" accept=".json,application/json" style="display:none" />
+        <input type="file" id="fileProject" accept=".flexlabel,.nlbl,.json,application/json" style="display:none" />
         <div id="importBanner" style="display:none;margin:0.35rem 0;padding:0.4rem 0.5rem;background:var(--import-banner-bg);border:1px solid var(--import-banner-border);border-radius:6px;font-size:12px;color:var(--import-banner-fg);">
           <strong>Imported ZPL</strong> — edit the text below; preview updates as you type.
           <button type="button" class="btn secondary" id="btnUseDesigner" style="margin-left:0.5rem;padding:0.2rem 0.5rem;font-size:11px">Back to designer</button>
@@ -996,14 +996,14 @@
               id="canvasWorkspacePadPx"
               class="fl-input"
               min="24"
-              max="240"
+              max="720"
               step="4"
               value="72"
               style="max-width:5.5rem"
             />
           </label>
           <p class="hint print-panel-hint" style="margin:0.35rem 0 0;font-size:11px;max-width:28rem">
-            Default is 72 (twice the old 36). Range 24–240. Resize the canvas area if the window is small.
+            Default is 72. Range 24–720 — higher values add gray space around the label so you can drag farther past the edge (designer-only; does not change ZPL). If the canvas feels tight, increase this or widen the window.
           </p>
           <p class="hint print-panel-hint" style="margin:0.75rem 0 0.35rem">Labelary preview (bottom panel)</p>
           <label
@@ -1049,7 +1049,7 @@
           <div class="settings-help-body">
             <p><strong>Label</strong> size is the physical media; <strong>margins</strong> define the printable area inside it (green dashed). <strong>Red tint</strong> is still on the label — uncheck <strong>Printable area only</strong> to place there. With <strong>Printable area only</strong> on, elements stay inside the green area even if <strong>Canvas workspace</strong> is on (the gray pad is only for easier clicking around the label). ZPL still maps the white label rectangle.</p>
             <p><strong>Red tint</strong> = margin (won’t print as content unless you use tokens that print there). <strong>Reset label defaults</strong> in the header restores 2×1 in, 203 DPI, 0.05&quot; margins on all sides (header fields update), printable area off (full label), canvas workspace on, hides the yellow calibration overlay, clears imported ZPL back to designer ZPL, square label shell on canvas, and turns preview margin outline and label-edge overlay off; your objects stay. <strong>Reset canvas</strong> (header only) does the same canvas cleanup except it <strong>keeps</strong> those Labelary preview toggles (and any label-edge insets). It does not change label size or margins. Check <strong>Printable area only</strong> to lock placement to the green printable zone. Tightening printable area or turning off canvas workspace may ask to fit or clip content.</p>
-            <p><strong>Appearance</strong> — optional <strong>rounded label corners</strong> on the canvas (cosmetic; does not change ZPL). <strong>Workspace margin (px)</strong> sets how much gray pad surrounds the label for dragging elements off the sticker (default 72; 24–240); designer-only.</p>
+            <p><strong>Appearance</strong> — optional <strong>rounded label corners</strong> on the canvas (cosmetic; does not change ZPL). <strong>Workspace margin (px)</strong> sets how much gray pad surrounds the label for dragging elements past the sticker edge (default 72; 24–720); designer-only.</p>
             <p><strong>Print calibration</strong> — use <strong>Settings → Calibration</strong> (or <strong>Calibrate</strong> in the corner to open that tab). Click <strong>Calibrate</strong> (corner FAB) to show the yellow box and enable calibration ZPL ticks. Sections cover Labelary margin/label-edge overlays, yellow box snap/match/apply, optional grid/ticks and ZPL tick marks, export/import, and reset guidance. <strong>Set printable area from yellow box</strong> sets label W×H, rulers, and <code>^PW</code>/<code>^LL</code> to the yellow overlay. Use the <strong>pink Margin box</strong> (header checkbox + Set margins button) to set margins without changing label size. <strong>Export / Import calibration</strong> is label setup JSON only (no canvas objects). <strong>Export all settings</strong> on the Printer tab bundles printer, Flex API, and calibration in one file. Pick a tool and <strong>click</strong> to place; drag to move. With an object selected, drag the <strong>blue corner squares</strong> (bottom-right = grow; top-left on shapes = shrink/move corner).</p>
             <p><strong>Labelary preview</strong> — <strong>Show margin outline</strong> draws a light red dotted rectangle over the preview image for the printable area (inside margins). It is display-only and does not change ZPL.</p>
             <p>Text: SE only — on-canvas size tracks ZPL <code>^AfN</code> (font <code>f</code> = 0, A–H, P–V) height/width (dots). Barcode: SE only (2D = magnification; QR pattern uses Labelary-compatible encoding when online).</p>
@@ -1333,7 +1333,7 @@
               <p class="about-live-design-name">Live Design</p>
             </div>
             <p class="about-app-title">Flex PRN Label Designer</p>
-            <p class="about-tag">Design ZPL for Zebra printers, use Flex merge tokens, preview with Labelary, import/export .prn and projects, optional Flex API lookup and token fill, direct print via PowerShell or relay.</p>
+            <p class="about-tag">Design ZPL for Zebra printers, use Flex merge tokens, preview with Labelary, import/export .prn and .flexlabel projects, optional Flex API lookup and token fill, direct print via PowerShell or relay.</p>
             <hr class="about-hr" />
             <p class="about-strong">A tool by Paragon Live Design</p>
             <p class="about-muted">Made for Flex Rental Solutions workflows — layout and tweak barcode labels without living inside Flex for every small change.</p>
@@ -1444,6 +1444,7 @@
     '}';
 
   var SYMBOLOGIES = [
+    { id: 'textonly', label: 'Text only (barcode value)', zpl: 'textonly' },
     { id: 'qr', label: 'QR Code', zpl: 'qr' },
     { id: 'code128', label: 'Code 128', zpl: 'code128' },
     { id: 'code39', label: 'Code 39', zpl: 'code39' },
@@ -1520,7 +1521,8 @@
   /** Default gray-pad thickness around the white label (designer only; doubled from original 36). */
   var DEFAULT_CANVAS_WORKSPACE_PAD_PX = 72;
   var MIN_CANVAS_WORKSPACE_PAD_PX = 24;
-  var MAX_CANVAS_WORKSPACE_PAD_PX = 240;
+  /** Upper clamp for Settings → Appearance “Workspace margin (px)”; larger = more gray pad and more room to drag past the label edge (designer-only). */
+  var MAX_CANVAS_WORKSPACE_PAD_PX = 720;
   /** .canvas-wrap padding 12px × 2 (must match CSS). */
   var CANVAS_WRAP_PADDING_PX = 24;
   var CANVAS_SLOT_MEASURE_SLACK_PX = 2;
@@ -1560,7 +1562,12 @@
     o.fontW = clampTextFontWidth(o.fontH, o.fontW);
   }
 
-  function qrEffectiveData(o) {
+  /**
+   * Resolved payload for preview: same rules for QR bits, HR caption, and 1D width.
+   * When data is exactly [barcode], use merge map (API / test data / “merged for preview”) then designer layout sample;
+   * otherwise substitute all tokens in the string. Keeps HR text from showing literal [barcode] while the QR encodes the sample.
+   */
+  function barcodeEffectiveData(o) {
     var d = String(o.data != null ? o.data : '[barcode]');
     var map = getEffectiveMergeMap();
     if (map && map['[barcode]'] != null && String(map['[barcode]']).length && d === '[barcode]') {
@@ -1571,6 +1578,10 @@
       if (sample.length) return sample;
     }
     return mergePreviewString(d);
+  }
+
+  function qrEffectiveData(o) {
+    return barcodeEffectiveData(o);
   }
 
   function estimateQrModulesConservative(dataStr) {
@@ -1649,11 +1660,15 @@
   }
 
   function barcodeHrFontH(o) {
-    return Math.max(8, Math.min(120, parseInt(o.hrFontH, 10) || 15));
+    return Math.max(6, Math.min(120, parseInt(o.hrFontH, 10) || 15));
   }
 
   function barcodeHrFontW(o) {
     return Math.max(6, Math.min(120, parseInt(o.hrFontW, 10) || 11));
+  }
+
+  function barcodeHrZplFont(o) {
+    return normalizeZplTextFont(o && o.hrZplFont);
   }
 
   /** QR center logo: Properties slider (% of QR side). Size snaps to whole modules (mag dots); max % scales with symbol (EC H). */
@@ -2337,7 +2352,10 @@
       o.fontW = Math.max(8, Math.min(200, Math.round((o.fontW || 26) * s)));
       clampTextObjectFonts(o);
     } else if (o.type === 'barcode') {
-      if (symIs2d(o.sym)) {
+      if (barcodeSymIsTextOnly(o)) {
+        o.hrFontH = Math.max(6, Math.min(120, Math.round((o.hrFontH || 15) * s)));
+        o.hrFontW = Math.max(6, Math.min(120, Math.round((o.hrFontW || 11) * s)));
+      } else if (symIs2d(o.sym)) {
         o.mag = Math.max(1, Math.min(BARCODE_2D_MAG_MAX, Math.round((o.mag != null ? o.mag : 4) * s)));
       } else {
         o.barH = Math.max(20, Math.min(400, Math.round((o.barH || 60) * s)));
@@ -3214,6 +3232,10 @@
     return s === 'qr' || s === 'datamatrix' || s === 'pdf417' || s === 'aztec';
   }
 
+  function barcodeSymIsTextOnly(o) {
+    return String(o && o.sym || '').toLowerCase() === 'textonly';
+  }
+
   function estimateQrModules(dataStr) {
     return estimateQrModulesConservative(dataStr);
   }
@@ -3240,14 +3262,22 @@
       var cw = Math.max(80, Math.round(bh * 2.4));
       return { w: cw, h: bh + 10 };
     }
-    var d1d = String(o.data || '');
+    if (sym === 'textonly') {
+      var tto = barcodeHumanText(o);
+      var fhTo = Math.max(6, Math.min(120, parseInt(o.hrFontH, 10) || 15));
+      var fwTo = Math.max(6, Math.min(120, parseInt(o.hrFontW, 10) || 11));
+      var nch = Math.max(1, String(tto || ' ').length);
+      var wto = Math.min(500, Math.max(fwTo * 2, Math.ceil(nch * fwTo * 0.62)));
+      return { w: Math.max(24, wto), h: fhTo };
+    }
+    var d1d = barcodeEffectiveData(o);
     var n = Math.max(3, d1d.length);
     var w = Math.max(40, Math.round(n * 11 * modW));
     return { w: w, h: bh };
   }
 
   function barcodeHumanText(o) {
-    return mergePreviewString(String(o.data || ''));
+    return barcodeEffectiveData(o);
   }
 
   function hrCaptionWidthDots(o) {
@@ -3287,7 +3317,7 @@
     var targetWPx = Math.max(fwD * px, hrd.length * fwD * px * 0.58);
 
     ctx.save();
-    ctx.font = 'bold ' + hPx + 'px system-ui,sans-serif';
+    ctx.font = textCanvasFontSpec(barcodeHrZplFont(o), hPx);
     var natW = ctx.measureText(hrd).width || 1;
     var scaleX = Math.min(4, Math.max(0.2, targetWPx / natW));
 
@@ -3338,11 +3368,39 @@
     ctx.restore();
   }
 
+  /** Designer canvas: plain text for “Text only” symbology (same resolved value as QR would encode). */
+  function drawBarcodeTextOnlyCanvas(o, coreDots) {
+    var hr = barcodeHumanText(o);
+    if (!hr) return;
+    var Md = marginDots();
+    var px = state.pxPerDot;
+    var fhD = barcodeHrFontH(o);
+    var fwD = barcodeHrFontW(o);
+    var hrd = hr.length > 120 ? hr.slice(0, 117) + '…' : hr;
+    var ftInnerX = hrFtXForBelowAbove(o, Md.l + o.x, coreDots.w) - Md.l;
+    var ftInnerY = o.y + fhD;
+    var cap = innerToCanvas(ftInnerX, ftInnerY);
+    var bw = Math.max(24, coreDots.w * px);
+    var targetWPx = Math.max(fwD * px, hrd.length * fwD * px * 0.58);
+    ctx.save();
+    ctx.font = textCanvasFontSpec(barcodeHrZplFont(o), fhD * px);
+    var natW = ctx.measureText(hrd).width || 1;
+    var scaleX = Math.min(4, Math.max(0.2, Math.min(targetWPx, bw) / natW));
+    ctx.translate(cap.x, cap.y);
+    ctx.scale(scaleX, 1);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#111';
+    ctx.fillText(hrd, 0, 0);
+    ctx.restore();
+  }
+
   function estimateHrTextWidthDots(text) {
     return Math.min(400, Math.max(24, String(text).length * 7));
   }
 
   function computeBarcodeLabelPadding(o) {
+    if (barcodeSymIsTextOnly(o)) return { l: 0, t: 0, r: 0, b: 0 };
     var pos = o.labelPos || 'none';
     var tw = hrCaptionWidthDots(o);
     var th = barcodeHrFontH(o) + 4;
@@ -3393,6 +3451,8 @@
     if (!o.labelPos) o.labelPos = 'none';
     if (o.hrFontH == null || isNaN(o.hrFontH)) o.hrFontH = 15;
     if (o.hrFontW == null || isNaN(o.hrFontW)) o.hrFontW = 11;
+    o.hrZplFont = normalizeZplTextFont(o.hrZplFont);
+    if (o.hrUtf8 == null) o.hrUtf8 = true;
     if (o.hrAlign !== 'left' && o.hrAlign !== 'right' && o.hrAlign !== 'center') {
       o.hrAlign = 'center';
     }
@@ -3421,6 +3481,7 @@
   /** Canvas-only mock so changing symbology is visibly distinct from generic 1D bars. holeSidePx: clear square in center (logo / inside HR). */
   function drawBarcodeDesignerPreview(o, p, bw, bh, holeSidePx) {
     var sym = String(o.sym || 'qr').toLowerCase();
+    if (sym === 'textonly') return;
     holeSidePx = holeSidePx > 0 ? holeSidePx : 0;
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(p.x, p.y, bw, bh);
@@ -4093,6 +4154,8 @@
       s.barH = o.barH || 60;
       s.mag = o.mag != null ? o.mag : 4;
       s.moduleW = o.moduleW != null ? o.moduleW : 2;
+      s.hrFontH = o.hrFontH != null ? o.hrFontH : 15;
+      s.hrFontW = o.hrFontW != null ? o.hrFontW : 11;
     } else if (o.type === 'image') {
       s.iw = o.iw || 80;
       s.ih = o.ih || 40;
@@ -4120,6 +4183,10 @@
       o.mag = Math.max(1, Math.min(BARCODE_2D_MAG_MAX, parseInt(o.mag, 10) || 4));
       o.moduleW = Math.max(1, Math.min(6, parseInt(o.moduleW, 10) || 2));
       o.barH = Math.max(20, Math.min(400, parseInt(o.barH, 10) || 60));
+      if (barcodeSymIsTextOnly(o)) {
+        o.hrFontH = Math.max(6, Math.min(120, parseInt(o.hrFontH, 10) || 15));
+        o.hrFontW = Math.max(6, Math.min(120, parseInt(o.hrFontW, 10) || 11));
+      }
       var bt = computeBarcodeTotalDots(o);
       if (o.x - bt.pad.l + bt.w > maxX) o.x = Math.max(bt.pad.l, maxX - bt.w);
       if (o.y - bt.pad.t + bt.h > maxY) o.y = Math.max(bt.pad.t, maxY - bt.h);
@@ -4183,16 +4250,21 @@
       logoThreshold: 1,
       hrFontH: 1,
       hrFontW: 1,
+      hrZplFont: 1,
+      hrUtf8: 1,
       hrAlign: 1,
       textBack: 1
     };
     ed.querySelectorAll('[data-k]').forEach(function (inp) {
       var k = inp.getAttribute('data-k');
       if (!keys[k]) return;
-      if (inp.type === 'checkbox') inp.checked = !!o[k];
-      else if (inp.type === 'number') inp.value = o[k] != null ? o[k] : '';
+      if (inp.type === 'checkbox') {
+        if (k === 'hrUtf8') inp.checked = o.type === 'barcode' && o.hrUtf8 !== false;
+        else inp.checked = !!o[k];
+      } else if (inp.type === 'number') inp.value = o[k] != null ? o[k] : '';
       else if (inp.type === 'range') inp.value = o[k] != null ? o[k] : '';
       else if (k === 'zplFont') inp.value = normalizeZplTextFont(o.zplFont);
+      else if (k === 'hrZplFont') inp.value = o.type === 'barcode' ? barcodeHrZplFont(o) : normalizeZplTextFont(o.hrZplFont);
       else if (k === 'boxFill') {
         inp.value =
           o.boxFill === 'black' || o.boxFill === 'white' ? o.boxFill : 'outline';
@@ -4218,7 +4290,10 @@
         o.fontW = Math.max(8, Math.min(200, s.fontW + ddx));
         clampTextObjectFonts(o);
       } else if (o.type === 'barcode') {
-        if (symIs2d(o.sym)) {
+        if (barcodeSymIsTextOnly(o)) {
+          o.hrFontH = Math.max(6, Math.min(120, (s.hrFontH != null ? s.hrFontH : 15) + ddy));
+          o.hrFontW = Math.max(6, Math.min(120, (s.hrFontW != null ? s.hrFontW : 11) + ddx));
+        } else if (symIs2d(o.sym)) {
           o.mag = Math.max(1, Math.min(BARCODE_2D_MAG_MAX, (s.mag != null ? s.mag : 4) + Math.round((ddx + ddy) / 14)));
         } else {
           o.moduleW = Math.max(1, Math.min(6, (s.moduleW != null ? s.moduleW : 2) + Math.round(ddx / 24)));
@@ -4255,7 +4330,10 @@
       if (o.type === 'barcode') {
         o.x = s.x + ddx;
         o.y = s.y + ddy;
-        if (symIs2d(o.sym)) {
+        if (barcodeSymIsTextOnly(o)) {
+          o.hrFontH = Math.max(6, Math.min(120, (s.hrFontH != null ? s.hrFontH : 15) - ddy));
+          o.hrFontW = Math.max(6, Math.min(120, (s.hrFontW != null ? s.hrFontW : 11) - ddx));
+        } else if (symIs2d(o.sym)) {
           o.mag = Math.max(1, Math.min(BARCODE_2D_MAG_MAX, (s.mag != null ? s.mag : 4) - Math.round((ddx + ddy) / 14)));
         } else {
           o.moduleW = Math.max(1, Math.min(6, (s.moduleW != null ? s.moduleW : 2) - Math.round(ddx / 24)));
@@ -4547,53 +4625,59 @@
         var hr = barcodeHumanText(o);
         var insideHr = lp === 'inside' && hr;
         var holeSidePx = 0;
-        if (symLow === 'qr') {
-          if (hasLogoDraw && o.logoW > 0) {
-            holeSidePx = o.logoW * px;
-          } else if (insideHr) {
-            holeSidePx = Math.min(bw, bh) * 0.26 + 2;
-          }
-        }
-        var qKey = symLow === 'qr' ? qrDrawCacheKey(o, bw, bh) : '';
-        var drewRealQr = false;
-        if (
-          symLow === 'qr' &&
-          o._qrDrawKey === qKey &&
-          qKey &&
-          o._qrCanvas &&
-          o._qrCanvas.width
-        ) {
-          ctx.drawImage(o._qrCanvas, p.x, p.y, bw, bh);
-          drewRealQr = true;
+        if (symLow === 'textonly') {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(p.x, p.y, bw, bh);
+          drawBarcodeTextOnlyCanvas(o, coreDots);
         } else {
-          drawBarcodeDesignerPreview(o, p, bw, bh, holeSidePx);
-          if (symLow === 'qr' && qKey) {
-            scheduleQrRasterize(o, bw, bh, qKey);
+          if (symLow === 'qr') {
+            if (hasLogoDraw && o.logoW > 0) {
+              holeSidePx = o.logoW * px;
+            } else if (insideHr) {
+              holeSidePx = Math.min(bw, bh) * 0.26 + 2;
+            }
           }
-        }
-        if (hasLogoDraw) {
-          var lw = o.logoW > 0 ? o.logoW : snapQrLogoSideDots(o, (Math.min(coreDots.w, coreDots.h) * (o.logoPct != null ? o.logoPct : 20)) / 100);
-          var sidePx = lw * px;
-          var posL = qrLogoCanvasTopLeftPx(p, bw, bh, sidePx);
-          var lx = posL.lx;
-          var ly = posL.ly;
-          var logoPrev = getBarcodeLogoDesignerRasterCanvas(o);
-          if (logoPrev) {
-            ctx.drawImage(logoPrev, lx, ly, sidePx, sidePx);
+          var qKey = symLow === 'qr' ? qrDrawCacheKey(o, bw, bh) : '';
+          var drewRealQr = false;
+          if (
+            symLow === 'qr' &&
+            o._qrDrawKey === qKey &&
+            qKey &&
+            o._qrCanvas &&
+            o._qrCanvas.width
+          ) {
+            ctx.drawImage(o._qrCanvas, p.x, p.y, bw, bh);
+            drewRealQr = true;
           } else {
-            ctx.fillStyle = '#fff';
-            ctx.fillRect(lx - 1, ly - 1, sidePx + 2, sidePx + 2);
-            ctx.drawImage(o._logoEl, lx, ly, sidePx, sidePx);
+            drawBarcodeDesignerPreview(o, p, bw, bh, holeSidePx);
+            if (symLow === 'qr' && qKey) {
+              scheduleQrRasterize(o, bw, bh, qKey);
+            }
           }
-        } else if (insideHr && drewRealQr) {
-          var padIn = Math.min(bw, bh) * 0.24;
-          var ix = p.x + (bw - padIn) / 2;
-          var iy = p.y + (bh - padIn) / 2;
-          ctx.fillStyle = '#fff';
-          ctx.fillRect(ix - 1, iy - 1, padIn + 2, padIn + 2);
-        }
-        if (lp !== 'none' && hr) {
-          drawBarcodeHumanReadableCanvas(o, p, bw, bh, coreDots, hasLogoDraw);
+          if (hasLogoDraw) {
+            var lw = o.logoW > 0 ? o.logoW : snapQrLogoSideDots(o, (Math.min(coreDots.w, coreDots.h) * (o.logoPct != null ? o.logoPct : 20)) / 100);
+            var sidePx = lw * px;
+            var posL = qrLogoCanvasTopLeftPx(p, bw, bh, sidePx);
+            var lx = posL.lx;
+            var ly = posL.ly;
+            var logoPrev = getBarcodeLogoDesignerRasterCanvas(o);
+            if (logoPrev) {
+              ctx.drawImage(logoPrev, lx, ly, sidePx, sidePx);
+            } else {
+              ctx.fillStyle = '#fff';
+              ctx.fillRect(lx - 1, ly - 1, sidePx + 2, sidePx + 2);
+              ctx.drawImage(o._logoEl, lx, ly, sidePx, sidePx);
+            }
+          } else if (insideHr && drewRealQr) {
+            var padIn = Math.min(bw, bh) * 0.24;
+            var ix = p.x + (bw - padIn) / 2;
+            var iy = p.y + (bh - padIn) / 2;
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(ix - 1, iy - 1, padIn + 2, padIn + 2);
+          }
+          if (lp !== 'none' && hr) {
+            drawBarcodeHumanReadableCanvas(o, p, bw, bh, coreDots, hasLogoDraw);
+          }
         }
         ctx.restore();
       } else if (o.type === 'image') {
@@ -4980,7 +5064,29 @@
 
     function pushHrField(ftx, fty) {
       if (pos === 'none' || !barcodeHumanText(o)) return;
-      out.push('^FT' + ftx + ',' + fty + '^A0' + bo + ',' + fh + ',' + fw + '^FH\\^CI28^FD' + fdEscaped + '^FS^CI27');
+      var zfHr = barcodeHrZplFont(o);
+      if (o.hrUtf8 !== false) {
+        out.push(
+          '^FT' +
+            ftx +
+            ',' +
+            fty +
+            '^A' +
+            zfHr +
+            bo +
+            ',' +
+            fh +
+            ',' +
+            fw +
+            '^FH\\^CI28^FD' +
+            fdEscaped +
+            '^FS^CI27'
+        );
+      } else {
+        out.push(
+          '^FT' + ftx + ',' + fty + '^A' + zfHr + bo + ',' + fh + ',' + fw + '^FD' + fdEscaped + '^FS'
+        );
+      }
     }
 
     function emit2dHr(barW, barH) {
@@ -5021,11 +5127,9 @@
       }
     }
 
-    var native1dInterp =
-      (pos === 'below' || pos === 'above') &&
-      (sym === 'code128' || sym === 'ean13' || sym === 'upca');
-    var interpY = native1dInterp ? 'Y' : 'N';
-    var interpAbove = native1dInterp && pos === 'above' ? 'Y' : 'N';
+    /** Always N: built-in ^BC/^BE/^BU interpretation ignores our ^A height/width/font; use ^FT caption only. */
+    var noNativeHr = 'N';
+    var noNativeHrAbove = 'N';
 
     switch (sym) {
       case 'qr': {
@@ -5094,9 +5198,9 @@
       }
       case 'code128':
         out.push('^BY' + modW + ',3,' + Math.min(h, 320));
-        out.push('^FO' + x + ',' + y + '^BC' + bo + ',' + h + ',' + interpY + ',' + interpAbove + ',N');
+        out.push('^FO' + x + ',' + y + '^BC' + bo + ',' + h + ',' + noNativeHr + ',' + noNativeHrAbove + ',N');
         out.push('^FD>:' + escapeFd(d) + '^FS');
-        if (!native1dInterp) emit1dHr(core.w, h);
+        emit1dHr(core.w, h);
         break;
       case 'code39':
         out.push('^BY' + modW);
@@ -5112,15 +5216,15 @@
         break;
       case 'ean13':
         out.push('^BY' + modW);
-        out.push('^FO' + x + ',' + y + '^BE' + bo + ',' + h + ',' + interpY + ',' + interpAbove + ',N');
+        out.push('^FO' + x + ',' + y + '^BE' + bo + ',' + h + ',' + noNativeHr + ',' + noNativeHrAbove + ',N');
         out.push('^FD' + escapeFd(d) + '^FS');
-        if (!native1dInterp) emit1dHr(core.w, h);
+        emit1dHr(core.w, h);
         break;
       case 'upca':
         out.push('^BY' + modW);
-        out.push('^FO' + x + ',' + y + '^BU' + bo + ',' + h + ',' + interpY + ',' + interpAbove + ',N');
+        out.push('^FO' + x + ',' + y + '^BU' + bo + ',' + h + ',' + noNativeHr + ',' + noNativeHrAbove + ',N');
         out.push('^FD' + escapeFd(d) + '^FS');
-        if (!native1dInterp) emit1dHr(core.w, h);
+        emit1dHr(core.w, h);
         break;
       case 'datamatrix':
         out.push('^FO' + x + ',' + y + '^BX' + bo + ',' + mag + ',200');
@@ -5137,6 +5241,47 @@
         out.push('^FD' + escapeFd(d) + '^FS');
         emit2dHr(core.w, core.h);
         break;
+      case 'textonly': {
+        var ftX = hrFtXForBelowAbove(o, x, core.w);
+        var ftY = y + fh;
+        var zfTo = barcodeHrZplFont(o);
+        if (o.hrUtf8 !== false) {
+          out.push(
+            '^FT' +
+              ftX +
+              ',' +
+              ftY +
+              '^A' +
+              zfTo +
+              bo +
+              ',' +
+              fh +
+              ',' +
+              fw +
+              '^FH\\^CI28^FD' +
+              escapeFd(d) +
+              '^FS^CI27'
+          );
+        } else {
+          out.push(
+            '^FT' +
+              ftX +
+              ',' +
+              ftY +
+              '^A' +
+              zfTo +
+              bo +
+              ',' +
+              fh +
+              ',' +
+              fw +
+              '^FD' +
+              escapeFd(d) +
+              '^FS'
+          );
+        }
+        break;
+      }
       default:
         out.push('^FO' + x + ',' + y + '^BQ' + bo + ',2,' + mag);
         out.push('^FH\\^FDLA,' + escapeFd(d) + '^FS');
@@ -7215,6 +7360,8 @@
         labelPos: 'none',
         hrFontH: 15,
         hrFontW: 11,
+        hrZplFont: '0',
+        hrUtf8: true,
         hrAlign: 'center',
         logoPct: 20,
         barH: 60,
@@ -7693,6 +7840,8 @@
         html += '<option value="' + s.zpl + '"' + (o.sym === s.zpl ? ' selected' : '') + '>' + s.label + '</option>';
       });
       html += '</select></div>';
+      var isQr = String(o.sym || '').toLowerCase() === 'qr';
+      var isTextOnlySym = String(o.sym || '').toLowerCase() === 'textonly';
       var ds = o.dataSource === 'custom' ? 'custom' : 'flex';
       html += '<div class="prop"><label for="bcDataSource">Data source</label>';
       html += '<select id="bcDataSource" aria-label="Barcode data source">';
@@ -7715,7 +7864,14 @@
         '"><label>Custom data</label><textarea data-k="data" placeholder="Static text or merge token">' +
         escHtml(o.data || '') +
         '</textarea></div>';
-      html += '<div class="prop"><label>Show data label</label><select data-k="labelPos">';
+      if (isTextOnlySym) {
+        html +=
+          '<p class="hint" style="margin:0 0 0.35rem;font-size:11px">Same slot as a barcode in Flex: data is still <code>[barcode]</code> (or custom tokens) in ZPL — printed as plain <code>^A0</code> text with no symbol. Use <strong>Test data</strong> / scan to preview the resolved value.</p>';
+      }
+      html +=
+        '<div class="prop" id="bcLabelPosWrap" style="display:' +
+        (isTextOnlySym ? 'none' : 'block') +
+        '"><label>Show data label</label><select data-k="labelPos">';
       ['none', 'below', 'above', 'left', 'right', 'inside'].forEach(function (lp) {
         var lab = lp.charAt(0).toUpperCase() + lp.slice(1);
         html +=
@@ -7729,14 +7885,31 @@
       });
       html += '</select></div>';
       html +=
-        '<div class="prop"><label>Caption font height (dots)</label><input type="number" data-k="hrFontH" min="8" max="120" value="' +
+        '<div class="prop"><label>' +
+        (isTextOnlySym ? 'Font height (dots)' : 'Caption font height (dots)') +
+        '</label><input type="number" data-k="hrFontH" min="6" max="120" value="' +
         barcodeHrFontH(o) +
         '" /></div>';
       html +=
-        '<div class="prop"><label>Caption font width (dots)</label><input type="number" data-k="hrFontW" min="6" max="120" value="' +
+        '<div class="prop"><label>' +
+        (isTextOnlySym ? 'Font width (dots)' : 'Caption font width (dots)') +
+        '</label><input type="number" data-k="hrFontW" min="6" max="120" value="' +
         barcodeHrFontW(o) +
         '" /></div>';
-      html += '<div class="prop"><label>Caption align (below / above)</label><select data-k="hrAlign">';
+      html += '<div class="prop"><label>Caption ZPL font (^A)</label><select data-k="hrZplFont">';
+      ZPL_TEXT_FONTS.forEach(function (zf) {
+        var selHr = normalizeZplTextFont(o.hrZplFont) === zf.id ? ' selected' : '';
+        html += '<option value="' + escAttr(zf.id) + '"' + selHr + '>' + escHtml(zf.label) + '</option>';
+      });
+      html += '</select></div>';
+      html +=
+        '<div class="prop"><label class="chk"><input type="checkbox" data-k="hrUtf8" ' +
+        (o.hrUtf8 !== false ? 'checked' : '') +
+        ' /> UTF-8 for caption (^CI28)</label></div>';
+      html +=
+        '<div class="prop"><label>' +
+        (isTextOnlySym ? 'Horizontal align' : 'Caption align (below / above)') +
+        '</label><select data-k="hrAlign">';
       ['center', 'left', 'right'].forEach(function (al) {
         html +=
           '<option value="' +
@@ -7749,7 +7922,6 @@
           '</option>';
       });
       html += '</select></div>';
-      var isQr = String(o.sym || '').toLowerCase() === 'qr';
       var lpMax = isQr ? Math.max(QR_LOGO_PCT_MIN, Math.round(qrLogoMaxPctForObject(o))) : 95;
       html +=
         '<div class="prop" id="bcLogoWrap" style="display:' +
@@ -7781,11 +7953,20 @@
         '<div class="prop" style="margin-top:0.35rem"><label>Logo B/W threshold</label><input type="number" data-k="logoThreshold" min="0" max="255" value="' +
         (o.logoThreshold != null ? o.logoThreshold : 140) +
         '" /></div></div>';
+      html +=
+        '<div id="bcBarSizingWrap" style="display:' +
+        (isTextOnlySym ? 'none' : 'block') +
+        '">';
       html += '<div class="prop"><label>1D bar height (dots)</label><input type="number" data-k="barH" min="20" max="400" value="' + (o.barH || 60) + '" /></div>';
       html += '<div class="prop"><label>2D magnification (QR/DM)</label><input type="number" data-k="mag" min="1" max="12" value="' + (o.mag || 4) + '" /></div>';
       html += '<div class="prop"><label>1D module width (^BY)</label><input type="number" data-k="moduleW" min="1" max="6" value="' + (o.moduleW || 2) + '" /></div>';
+      html += '</div>';
       html +=
-        '<p class="hint" style="margin:0;font-size:11px">Resize the barcode on the label: <strong>SE handle</strong> changes magnification (2D) or module width &amp; bar height (1D). Size matches ZPL preview.</p>';
+        '<p class="hint" style="margin:0;font-size:11px">' +
+        (isTextOnlySym
+          ? 'Resize with the <strong>SE handle</strong>: drag horizontally for font width, vertically for font height (matches other barcodes).'
+          : 'Resize the barcode on the label: <strong>SE handle</strong> changes magnification (2D) or module width &amp; bar height (1D). Size matches ZPL preview.') +
+        '</p>';
     } else if (o.type === 'image') {
       var imgLinked = !!o.linkIwIh;
       var svgAspectOn =
@@ -8067,8 +8248,9 @@
       clampTextObjectFonts(o);
     }
     if (o.type === 'barcode') {
-      if (k === 'hrFontH') o.hrFontH = Math.max(8, Math.min(120, parseInt(o.hrFontH, 10) || 15));
+      if (k === 'hrFontH') o.hrFontH = Math.max(6, Math.min(120, parseInt(o.hrFontH, 10) || 15));
       if (k === 'hrFontW') o.hrFontW = Math.max(6, Math.min(120, parseInt(o.hrFontW, 10) || 11));
+      if (k === 'hrZplFont') o.hrZplFont = normalizeZplTextFont(el.value);
       if (k === 'mag') {
         o.mag = Math.max(1, Math.min(BARCODE_2D_MAG_MAX, parseInt(o.mag, 10) || 4));
       }
@@ -8080,6 +8262,8 @@
         k === 'logoPct' ||
         k === 'hrFontH' ||
         k === 'hrFontW' ||
+        k === 'hrZplFont' ||
+        k === 'hrUtf8' ||
         k === 'hrAlign';
       if (invQr) invalidateBarcodeQrCache(o);
     }
@@ -8116,6 +8300,9 @@
     if (
       o.type === 'barcode' &&
       (k === 'sym' ||
+        k === 'hrZplFont' ||
+        k === 'hrUtf8' ||
+        (String(o.sym || '').toLowerCase() === 'textonly' && (k === 'hrFontH' || k === 'hrFontW')) ||
         (String(o.sym || '').toLowerCase() === 'qr' &&
           (k === 'mag' || k === 'data' || k === 'logoPct' || k === 'logoThreshold')))
     ) {
@@ -8283,6 +8470,8 @@
       labelPos: 'none',
       hrFontH: 15,
       hrFontW: 11,
+      hrZplFont: '0',
+      hrUtf8: true,
       hrAlign: 'center',
       logoPct: 20,
       barH: 60,
@@ -9419,7 +9608,7 @@
       var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
       var a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = 'flex-label-project.json';
+      a.download = 'flex-label-project.flexlabel';
       a.click();
       URL.revokeObjectURL(a.href);
     };
@@ -9444,7 +9633,7 @@
           setTool(state.tool || 'select');
           updatePreviewMarginOverlay();
         } catch (err) {
-          alert('Could not read project file. Use a .json saved from Save project.');
+          alert('Could not read project file. Use a .flexlabel from Save .flexlabel, or a legacy .json / .nlbl from this designer.');
         }
       };
       r.readAsText(f, 'UTF-8');
